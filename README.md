@@ -99,10 +99,12 @@ The caller's `github.token` is attempted for public data. If insufficient, pass 
 
 ## Local development
 
-Requires **Node.js 26**. No dependency installation or compilation is necessary.
+Requires **Node.js 26**. Install development dependencies for the strict type checker; no application build or runtime dependencies are needed.
 
 ```bash
+npm install --no-audit --no-fund
 npm run check
+npm run typecheck
 npm test
 npm run demo -- --username demo
 npm run gallery:check
