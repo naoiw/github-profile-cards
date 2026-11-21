@@ -80,7 +80,7 @@ test("100-repository contribution cap splits windows without overlap",async()=>{
 });
 
 test("GraphQL errors and stalled cursors fail explicitly",async()=>{
-  const graphQLError=(async()=>({ok:true,json:async()=>({errors:[{message:"access denied"}]})})) as typeof fetch;
+  const graphQLError=(async()=>({ok:true,json:async()=>({errors:[{message:"access denied"}]})})) as unknown as typeof fetch;
   await assert.rejects(new GitHubClient("fixture",graphQLError).repositories("demo"),/access denied/);
   const stalled=mockGraphQL(()=>({user:{repositories:{nodes:[],pageInfo:{hasNextPage:true,endCursor:null}}}}));
   await assert.rejects(new GitHubClient("fixture",stalled).repositories("demo"),/Invalid pagination cursor/);
