@@ -1,21 +1,58 @@
-# Architecture
+# Architecture and metric definitions
 
-The project uses Node.js 26's stable native TypeScript type stripping. There are no runtime npm dependencies.
+GitHub Profile Cards is a **Node.js 26 / TypeScript** CLI packaged as a composite GitHub Action. It produces self-contained SVG files, without a hosted API, browser UI, runtime npm dependencies, or a build step.
 
-- src/github.ts: GitHub GraphQL API, pagination, yearly commit-contribution aggregation and range splitting.
-- src/core.ts: primary-language counts, configurable Top N / Others, standalone SVG layouts.
-- src/cli.ts: CLI argument validation and SVG file generation.
-- action.yml: reusable composite Action which selects Node.js 26.
-- examples/profile-workflow.yml: end-user workflow that commits its own generated output.
+## Components
 
-## Language semantics
+| Path | Responsibility |
+| --- | --- |
+| `src/github.ts` | Authenticated GitHub GraphQL requests, repository pagination, contributions by year |
+| `src/core.ts` | Filtering, aggregation, colors, Top N/Others and SVG rendering |
+| `src/cli.ts` | Command-line arguments, input validation, output files and demo data |
+| `action.yml` | Reusable composite Action that runs the CLI with Node.js 26 |
+| `examples/profile-workflow.yml` | Caller workflow that commits SVGs into the user's own profile repository |
+| `scripts/gallery.ts` | Regenerates the fixed public-data light/dark gallery SVGs |
+| `tests/core.test.ts` | Unit tests for metric definitions, labels, themes and safe markup |
 
-**By Repo:** GraphQL repositories(ownerAffiliations: OWNER, isFork: false); all repository pages, counting each repository's primaryLanguage once. Forks and private repositories are excluded. Archived ones are included by default.
+## Data sources and definitions
 
-**By Commit:** GraphQL contributionsCollection.commitContributionsByRepository, queried across contribution years. Each repository's contribution count is attributed to that repository's primaryLanguage, **not the language of edited files**. Contributions to non-owned repositories can be included. GitHub's rules for what counts as a contribution and its visibility rules apply.
+### Languages by Repo
 
-GraphQL returns at most 100 contribution repositories in a given time window. If that limit is reached, this project recursively divides the period to avoid silently hiding a long tail. It errors if an exhaustive result is impossible.
+The GraphQL `user.repositories(ownerAffiliations: OWNER, isFork: false)` connection is paginated across all owned repositories. Each repository with a `primaryLanguage` counts **once** toward that language. Repositories with no primary language, forks and private repositories are not counted. Archived repositories are included unless excluded in settings.
 
-The full distribution is the percentage denominator, whether or not all categories are rendered. Others is the sum of hidden languages. SVG markup is escaped and self-contained, with no external script, font or image dependencies.
+### Languages by Commit
 
-No code in this repository changes naoiw/naoiw. Users' workflows decide where to save and display the generated SVGs.
+The GraphQL `user.contributionsCollection(from, to).commitContributionsByRepository` connection is queried for each reported contribution year. Contribution counts are accumulated by the **repository's primary language**. This is not a measurement of changed-line counts, file extensions, or languages actually modified within a commit.
+
+Some eligible contributions can be in repositories owned by others; GitHub's visibility and contribution rules determine what GraphQL reports. The renderer excludes private repository rows.
+
+GitHub limits `commitContributionsByRepository` to at most 100 repositories per time window. When a response reaches that cap, `src/github.ts` subdivides the window instead of silently losing part of the long tail. A window that cannot be fully retrieved causes an explicit error.
+
+### Percentages, Top N and labels
+
+The denominator for every percentage is the **complete included distribution**, not just the visible Top N. Named languages are sorted by contribution/repository count, then by name. When the number of languages exceeds `top-n`, the remainder can be combined as `Others`.
+
+- Below the cap: `7 languages`, not `Top 12 · 7 languages`.
+- Above the cap: `Top 12 of 17 languages + Others` (when Others is enabled).
+- The donut center shows the **total number of repos/commits**, not a count of legend entries.
+- Absolute counts and shares are in separately labeled columns.
+- Positive shares too small to round to 0.1% are displayed as `<0.1%`. Values just below 100% may be shown as `>99.9%`.
+
+## GitHub language colors
+
+The GraphQL `primaryLanguage { name color }` field is the preferred source for both the language name and its color. **The tool does not maintain a whitelist of supported languages.** Names returned as a primary language can be counted even when they are unknown to the code.
+
+SVG color values accept valid 3-digit or 6-digit hexadecimal colors (3-digit values are expanded). If the API supplies no valid color, the language is retained and displayed with neutral `#87929c`. The first valid color found for a language takes precedence over an earlier missing color. XML and SVG attributes are escaped/sanitized.
+
+GitHub's own language detection is based on [Linguist](https://github.com/github-linguist/linguist); this project does not separately parse every source file and therefore does **not** claim to list every language used in each repository.
+
+## Rendering and integration
+
+`renderSvg()` supports `donut` and `bars`, and `dark` and `light` themes. SVG markup is self-contained (no external fonts, images, JavaScript, or token data). The Action writes two files:
+
+- `<output-dir>/languages-by-repo.svg`
+- `<output-dir>/languages-by-commit.svg`
+
+The caller workflow decides whether/where to commit these files. This repository never directly modifies a user's profile.
+
+Gallery files in `docs/previews/{dark,light}/` are frozen public-data snapshots generated by `scripts/gallery.ts`. They are checked in CI with `npm run gallery:check` and displayed with the HTML `<picture>` element so viewers receive a theme-appropriate image.
