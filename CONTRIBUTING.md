@@ -1,0 +1,60 @@
+# Contributing to GitHub Profile Cards
+
+Thanks for considering a contribution! Bug reports, test cases, documentation improvements, and SVG layout suggestions are welcome.
+
+## Before you start
+
+- Check [existing issues](https://github.com/naoiw/github-profile-cards/issues) and pull requests to avoid duplicating work.
+- Open or reference an issue for substantial changes, particularly changes that affect the meaning of the statistics.
+- Keep each PR focused. Do not change unrelated files, language definitions, or the public output contract without discussion.
+
+## Development environment
+
+- **Node.js 26** is required (see `.nvmrc` and `package.json`).
+- The project is TypeScript, executed with Node's native type stripping.
+- There are no runtime npm dependencies and no app deployment.
+
+Run these commands before opening a PR:
+
+```bash
+npm run check
+npm test
+npm run demo -- --username demo
+npm run gallery:check
+```
+
+`npm run demo` generates synthetic SVG files under `cards/` without using GitHub credentials.
+
+To test with real public data, set `GITHUB_TOKEN` in your **local environment** and run:
+
+```bash
+npm run generate -- --username YOUR_USERNAME --top-n 12 --theme dark
+```
+
+Never commit tokens, raw private data, `.env` files, or sensitive account details. The CI runs the composite Action against a public GitHub account for integration coverage; tests may still be limited by GitHub API availability.
+
+## Coding and data rules
+
+- Keep TypeScript implementation small and dependency-light; add libraries only with a concrete justification.
+- Maintain deterministic SVG output, valid XML escaping, safe colors, and useful accessible image descriptions.
+- **By Repo** means counting repositories by their GitHub primary language.
+- **By Commit** means grouping GitHub commit contributions by the repository's primary language, **not** by changed-file languages.
+- Never silently drop rare languages, private-data visibility constraints, or missing GraphQL pages.
+- Preserve CLI and Action inputs and output paths unless a breaking change is explicitly discussed.
+- Add or update unit tests for aggregation and rendering changes.
+- If you change the sample card layout, run `npm run gallery` and commit the generated SVGs in `docs/previews/`. CI verifies that the snapshots are current.
+- Document any behavior change in README or `docs/`; avoid speculative feature descriptions.
+
+## Pull request workflow
+
+1. Create a short-lived branch from `main` (e.g., `feature/readable-legends` or `fix/graphql-pagination`).
+2. Make focused changes and run the checks above.
+3. Open a PR against `main`, linking related issues and including screenshots or SVG previews for visual changes.
+4. Include the test results and any validation you could not run.
+5. Wait for review and maintainers' approval. Contributors should not assume a PR will be merged automatically.
+
+A permanent `develop` branch is not required. This repository follows the shared [naoiw GitHub Flow](https://github.com/naoiw/.github/blob/main/standards/GITHUB_FLOW.md) while this project-specific guide takes precedence when needed.
+
+## License
+
+By contributing, you agree that your contributions will be licensed under this repository's [MIT License](LICENSE). Third-party code or assets must respect their own license terms.
