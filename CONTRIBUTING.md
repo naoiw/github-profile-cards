@@ -43,6 +43,7 @@ Never commit tokens, raw private data, `.env` files, or sensitive account detail
 - Preserve CLI and Action inputs and output paths unless a breaking change is explicitly discussed.
 - Add or update unit tests for aggregation and rendering changes.
 - If you change the sample card layout, run `npm run gallery` and commit the generated SVGs in `profile-card-output/{dark,light}/`. CI verifies that the snapshots are current.
+- When embedding generated SVG cards in any README or Markdown documentation, make each card clickable and link it to `https://github.com/naoiw/github-profile-cards`. Use `[![Alt](path/to/card.svg)](https://github.com/naoiw/github-profile-cards)` for Markdown images, or wrap a `<picture>` element with `<a href="https://github.com/naoiw/github-profile-cards">` for theme-aware examples. This attribution belongs in the Markdown embedding, not inside the SVG artwork.
 - Document any behavior change in README or `docs/`; avoid speculative feature descriptions.
 
 ## Pull request workflow
