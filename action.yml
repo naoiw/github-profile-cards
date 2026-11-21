@@ -17,11 +17,11 @@ inputs:
     description: donut or bars
     default: donut
   theme:
-    description: dark or light
-    default: dark
+    description: all, dark or light (all generates both theme folders)
+    default: all
   output-dir:
-    description: Relative output directory inside the caller repository
-    default: cards
+    description: Root output directory; each theme is written to a subdirectory
+    default: profile-card-output
   hide-others:
     description: Do not combine hidden languages into an Others category
     default: 'false'
