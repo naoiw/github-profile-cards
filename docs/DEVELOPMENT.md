@@ -53,3 +53,13 @@ On pull requests and pushes to `main`, CI runs syntax checks, unit tests, determ
 Use a short-lived feature/fix branch based on `main` and open a PR. The repository does not require a permanent `develop` branch. Do not merge without the maintainers' approval. See [CONTRIBUTING.md](../CONTRIBUTING.md) and the [shared GitHub Flow standards](https://github.com/naoiw/.github/blob/main/standards/GITHUB_FLOW.md).
 
 In PR descriptions, explain changes to metric semantics and note which checks passed, including any untested environment-specific behavior. For visual changes, include a preview or reference the updated gallery files.
+
+## Stable releases
+
+The current stable release is `v1.0.0`, with an accompanying `v1` major-version alias. Consumers may use `naoiw/github-profile-cards@v1.0.0` for a fixed version, `@v1` for compatible v1 updates, or a full commit SHA for exact pinning.
+
+The initial release is published by the guarded workflow in `.github/workflows/publish-v1.yml` after it lands on `main`. That workflow runs static checks, unit tests, the public GitHub GraphQL Action smoke test, and the independent REST comparison **before** creating the `v1.0.0` release. It checks existing tags/releases and does not publish a new version on ordinary main pushes.
+
+For a future minor or patch release, use a separately reviewed release process with an updated version and notes. Do not move an existing specific-version tag, and update the `v1` major alias only after verifying the new release. Validate versioned Action usage from an independent consumer repository before closing a release issue.
+
+See [release notes](RELEASE_v1.0.0.md) and [changelog](../CHANGELOG.md).
