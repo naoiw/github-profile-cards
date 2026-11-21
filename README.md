@@ -71,6 +71,10 @@ For real data, export GITHUB_TOKEN and run:
 
 The Action's MVP inputs are username, token, top-n, chart, theme and output-dir; additional filters are currently CLI-only.
 
+## Preview from CI
+
+The pull-request CI also runs the composite Action against public GitHub data (account: naoiw) and uploads the resulting two SVG files as a downloadable **language-cards-live-preview** artifact. This does not modify the profile repository. The sample metrics are regenerated at CI time.
+
 ## Development
 
 - [Architecture and data semantics](docs/ARCHITECTURE.md)
