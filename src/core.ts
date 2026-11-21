@@ -62,46 +62,63 @@ function xml(s:string):string {
 function shorten(s:string):string { return s.length>24 ? s.slice(0,23)+"…" : s; }
 export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:GraphStyle, theme:CardTheme):string {
   const items=topN(all,opts);
-  const dark=theme==="dark";
-  const bg=dark?"#21262d":"#ffffff", fg=dark?"#e6edf3":"#1f2328";
-  const faint=dark?"#a6b3c1":"#57606a", border=dark?"#3d444d":"#d0d7de";
-  const rail=dark?"#30363d":"#f0f2f5", heading=dark?"#58c7f5":"#0969da";
-  const h=Math.max(300,110+items.length*29), w=780;
-  const metric=title.toLowerCase().includes("commit") ? "commits" : "repos";
+  const isCommit=title.toLowerCase().includes("commit");
+  const metric=isCommit ? "commits" : "repos";
+  const palette=theme==="dark"
+    ? {bg:"#21262d",fg:"#e6edf3",faint:"#a6b3c1",border:"#3d444d",rail:"#30363d",heading:"#58c7f5"}
+    : {bg:"#ffffff",fg:"#1f2328",faint:"#57606a",border:"#d0d7de",rail:"#f0f2f5",heading:"#0969da"};
+  const h=Math.max(310,112+items.length*31);
+  const w=780;
   const total=all.reduce((sum,entry)=>sum+entry.count,0);
+  const fmt=(n:number)=>n.toLocaleString("en-US");
   const p:string[]=[
     '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+xml(title)+'">',
     '<title>'+xml(title)+'</title>',
-    '<rect x="0.5" y="0.5" width="779" height="'+(h-1)+'" rx="12" fill="'+bg+'" stroke="'+border+'"/>',
-    '<text x="24" y="40" font-size="23" font-family="system-ui, sans-serif" font-weight="650" fill="'+heading+'">'+xml(title)+'</text>',
-    '<text x="24" y="64" font-size="12" font-family="system-ui, sans-serif" fill="'+faint+'">'+cardSubtitle(all,opts)+'</text>'
+    '<rect x="0.5" y="0.5" width="'+(w-1)+'" height="'+(h-1)+'" rx="12" fill="'+palette.bg+'" stroke="'+palette.border+'"/>',
+    '<text x="24" y="40" font-size="23" font-family="system-ui, sans-serif" font-weight="650" fill="'+palette.heading+'">'+xml(title)+'</text>',
+    '<text x="24" y="64" font-size="13" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+cardSubtitle(all,opts)+'</text>'
   ];
-  if (!items.length) p.push('<text x="24" y="140" fill="'+fg+'">No public language data available</text>');
-  else if(chart==="donut") {
-    const x=610,y=Math.round(h/2)+10,r=99,circ=2*Math.PI*r;
-    p.push('<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="none" stroke="'+rail+'" stroke-width="43"/>');
-    let offset=0;
+  if(!items.length) {
+    p.push('<text x="24" y="140" font-size="16" font-family="system-ui, sans-serif" fill="'+palette.fg+'">No public language data available</text>');
+    p.push('</svg>');
+    return p.join("\n")+"\n";
+  }
+  // Explicit table headings distinguish absolute counts from the share of all
+  // languages. The rows remain aligned even with large counts or long names.
+  const tableColumns=chart==="donut"
+    ? {count:374,percent:466}
+    : {count:675,percent:755};
+  p.push('<text x="24" y="90" font-size="11" font-family="system-ui, sans-serif" font-weight="600" fill="'+palette.faint+'">LANGUAGE</text>');
+  p.push('<text x="'+tableColumns.count+'" y="90" text-anchor="end" font-size="11" font-family="system-ui, sans-serif" font-weight="600" fill="'+palette.faint+'">'+(isCommit?"COMMITS":"REPOS")+'</text>');
+  p.push('<text x="'+tableColumns.percent+'" y="90" text-anchor="end" font-size="11" font-family="system-ui, sans-serif" font-weight="600" fill="'+palette.faint+'">SHARE</text>');
+  if(chart==="donut") {
+    const cx=621,cy=Math.round(h/2)+3,r=94,circumference=2*Math.PI*r;
+    p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+palette.rail+'" stroke-width="40"/>');
+    let start=0;
     for(const item of items) {
-      const length=item.ratio*circ;
-      p.push('<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="none" stroke="'+item.color+'" stroke-width="43" stroke-dasharray="'+length.toFixed(3)+' '+(circ-length).toFixed(3)+'" stroke-dashoffset="'+(-offset).toFixed(3)+'" transform="rotate(-90 '+x+' '+y+')"/>');
-      offset+=length;
+      const length=item.ratio*circumference;
+      p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+item.color+'" stroke-width="40" stroke-dasharray="'+length.toFixed(3)+' '+(circumference-length).toFixed(3)+'" stroke-dashoffset="'+(-start).toFixed(3)+'" transform="rotate(-90 '+cx+' '+cy+')"/>');
+      start+=length;
     }
-    p.push('<text x="'+x+'" y="'+(y+2)+'" text-anchor="middle" font-size="21" font-family="system-ui, sans-serif" font-weight="600" fill="'+fg+'">'+total.toLocaleString("en-US")+'</text>');
-    p.push('<text x="'+x+'" y="'+(y+23)+'" text-anchor="middle" font-size="12" font-family="system-ui, sans-serif" fill="'+faint+'">'+metric+'</text>');
+    p.push('<text x="'+cx+'" y="'+(cy+1)+'" text-anchor="middle" font-size="22" font-family="system-ui, sans-serif" font-weight="650" fill="'+palette.fg+'">'+fmt(total)+'</text>');
+    p.push('<text x="'+cx+'" y="'+(cy+23)+'" text-anchor="middle" font-size="12" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+metric+'</text>');
     items.forEach((item,i)=>{
-      const y=99+i*29;
-      p.push('<rect x="24" y="'+(y-12)+'" width="12" height="12" rx="2" fill="'+item.color+'"/>');
-      p.push('<text x="46" y="'+y+'" font-size="14" font-family="system-ui, sans-serif" fill="'+fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name))+'</text>');
-      p.push('<text x="440" y="'+y+'" text-anchor="end" font-size="13" font-family="system-ui, sans-serif" fill="'+faint+'">'+item.count.toLocaleString("en-US")+' · '+(item.ratio*100).toFixed(1)+'%</text>');
+      const y=120+i*31;
+      p.push('<rect x="24" y="'+(y-13)+'" width="12" height="12" rx="2" fill="'+item.color+'"/>');
+      p.push('<text x="45" y="'+y+'" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name))+'</text>');
+      p.push('<text x="'+tableColumns.count+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'">'+fmt(item.count)+'</text>');
+      p.push('<text x="'+tableColumns.percent+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+(item.ratio*100).toFixed(1)+'%</text>');
     });
   } else {
-    const max=Math.max(...items.map(x=>x.count),1);
+    const max=Math.max(...items.map(entry=>entry.count),1);
     items.forEach((item,i)=>{
-      const y=102+i*29;
-      p.push('<text x="24" y="'+y+'" font-size="14" font-family="system-ui, sans-serif" fill="'+fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name))+'</text>');
-      p.push('<rect x="245" y="'+(y-13)+'" width="390" height="16" rx="3" fill="'+rail+'"/>');
-      p.push('<rect x="245" y="'+(y-13)+'" width="'+(390*item.count/max).toFixed(1)+'" height="16" rx="3" fill="'+item.color+'"/>');
-      p.push('<text x="751" y="'+y+'" text-anchor="end" font-size="13" font-family="system-ui, sans-serif" fill="'+faint+'">'+(item.ratio*100).toFixed(1)+'%</text>');
+      const y=120+i*31;
+      const width=Math.max(2,335*item.count/max);
+      p.push('<text x="24" y="'+y+'" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name))+'</text>');
+      p.push('<rect x="245" y="'+(y-13)+'" width="335" height="17" rx="3" fill="'+palette.rail+'"/>');
+      p.push('<rect x="245" y="'+(y-13)+'" width="'+width.toFixed(2)+'" height="17" rx="3" fill="'+item.color+'"/>');
+      p.push('<text x="'+tableColumns.count+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'">'+fmt(item.count)+'</text>');
+      p.push('<text x="'+tableColumns.percent+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+(item.ratio*100).toFixed(1)+'%</text>');
     });
   }
   p.push("</svg>");
