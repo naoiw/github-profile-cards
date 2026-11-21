@@ -11,11 +11,18 @@ export type Options = { topN: number; showOthers: boolean; includeArchived: bool
 export type GraphStyle = "donut" | "bars";
 export type CardTheme = "dark" | "light";
 
-const fallback: Record<string,string> = {
-  TypeScript:"#3178c6", JavaScript:"#f1e05a", C:"#555555", "C++":"#f34b7d",
-  Rust:"#dea584", Python:"#3572a5", CoffeeScript:"#244776", HTML:"#e34c26",
-  CSS:"#563d7c", Go:"#00add8", Shell:"#89e051", Java:"#b07219"
-};
+export const UNKNOWN_LANGUAGE_COLOR="#87929c";
+
+// GitHub GraphQL's primaryLanguage.color is our source of truth. Never require
+// a hard-coded language whitelist: rare/new languages must still be counted.
+export function normalizeLanguageColor(value: string | null | undefined): string | null {
+  if(!value) return null;
+  if(/^#[0-9a-f]{6}$/i.test(value)) return value.toLowerCase();
+  if(/^#[0-9a-f]{3}$/i.test(value)) {
+    return "#"+[...value.slice(1).toLowerCase()].map(x=>x+x).join("");
+  }
+  return null;
+}
 
 function allowed(repo: RepoEntry, opts: Options): boolean {
   if (repo.isPrivate || !repo.primaryLanguage || (!opts.includeArchived && repo.isArchived)) return false;
@@ -31,8 +38,13 @@ function tally(rows: { repo: RepoEntry; count: number }[], opts: Options): Langu
     const lang = repo.primaryLanguage!;
     const key = lang.name.toLowerCase();
     const old = result.get(key);
-    if (old) old.count += count;
-    else result.set(key,{name:lang.name,color:/^#[0-9a-f]{6}$/i.test(lang.color??"") ? lang.color! : fallback[lang.name]??"#87929c",count});
+    const validColor=normalizeLanguageColor(lang.color);
+    if(old) {
+      old.count+=count;
+      if(old.color===UNKNOWN_LANGUAGE_COLOR && validColor) old.color=validColor;
+    } else {
+      result.set(key,{name:lang.name,color:validColor??UNKNOWN_LANGUAGE_COLOR,count});
+    }
   }
   const sorted = [...result.values()].sort((a,b)=>b.count-a.count || a.name.localeCompare(b.name));
   const total = sorted.reduce((s,v)=>s+v.count,0);
@@ -103,14 +115,14 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
     let start=0;
     for(const item of items) {
       const length=item.ratio*circumference;
-      p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+item.color+'" stroke-width="40" stroke-dasharray="'+length.toFixed(3)+' '+(circumference-length).toFixed(3)+'" stroke-dashoffset="'+(-start).toFixed(3)+'" transform="rotate(-90 '+cx+' '+cy+')"/>');
+      p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+(normalizeLanguageColor(item.color)??UNKNOWN_LANGUAGE_COLOR)+'" stroke-width="40" stroke-dasharray="'+length.toFixed(3)+' '+(circumference-length).toFixed(3)+'" stroke-dashoffset="'+(-start).toFixed(3)+'" transform="rotate(-90 '+cx+' '+cy+')"/>');
       start+=length;
     }
     p.push('<text x="'+cx+'" y="'+(cy+1)+'" text-anchor="middle" font-size="22" font-family="system-ui, sans-serif" font-weight="650" fill="'+palette.fg+'">'+fmt(total)+'</text>');
     p.push('<text x="'+cx+'" y="'+(cy+23)+'" text-anchor="middle" font-size="12" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+metric+'</text>');
     items.forEach((item,i)=>{
       const y=120+i*31;
-      p.push('<rect x="24" y="'+(y-13)+'" width="12" height="12" rx="2" fill="'+item.color+'"/>');
+      p.push('<rect x="24" y="'+(y-13)+'" width="12" height="12" rx="2" fill="'+(normalizeLanguageColor(item.color)??UNKNOWN_LANGUAGE_COLOR)+'"/>');
       p.push('<text x="45" y="'+y+'" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name))+'</text>');
       p.push('<text x="'+tableColumns.count+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'">'+fmt(item.count)+'</text>');
       p.push('<text x="'+tableColumns.percent+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+percentLabel(item.ratio)+'</text>');
@@ -122,7 +134,7 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
       const width=Math.max(2,335*item.count/max);
       p.push('<text x="24" y="'+y+'" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name))+'</text>');
       p.push('<rect x="245" y="'+(y-13)+'" width="335" height="17" rx="3" fill="'+palette.rail+'"/>');
-      p.push('<rect x="245" y="'+(y-13)+'" width="'+width.toFixed(2)+'" height="17" rx="3" fill="'+item.color+'"/>');
+      p.push('<rect x="245" y="'+(y-13)+'" width="'+width.toFixed(2)+'" height="17" rx="3" fill="'+(normalizeLanguageColor(item.color)??UNKNOWN_LANGUAGE_COLOR)+'"/>');
       p.push('<text x="'+tableColumns.count+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'">'+fmt(item.count)+'</text>');
       p.push('<text x="'+tableColumns.percent+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+percentLabel(item.ratio)+'</text>');
     });
