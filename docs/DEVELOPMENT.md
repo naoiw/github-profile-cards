@@ -11,7 +11,9 @@ The project uses Node's native TypeScript type stripping, with no dependency ins
 ## Local commands
 
 ```bash
+npm install --no-audit --no-fund
 npm run check
+npm run typecheck
 npm test
 npm run demo -- --username demo
 npm run gallery:check
@@ -42,7 +44,7 @@ Commit all four regenerated SVGs under `profile-card-output/dark/` and `profile-
 
 On pull requests and pushes to `main`, CI runs syntax checks, unit tests, deterministic gallery checks, demo SVG generation, and a **live public GraphQL** smoke test of the composite Action. The live SVGs are generated with `theme: all` and uploaded as temporary workflow artifacts for review. A successful CI run does **not** update the user's profile repository.
 
-Note: `npm run check` checks syntax, not static types. This MVP currently has no separate `tsc --noEmit` stage. Tests cannot guarantee that GitHub's API will always be reachable in every environment.
+`npm run check` validates Node.js syntax; `npm run typecheck` runs strict TypeScript 7 static checking with Node.js 26 definitions. The `tsconfig.json` is for static analysis; Node.js executes .ts directly using native type stripping. Tests cannot guarantee that GitHub's API will always be reachable.
 
 ## Branches and pull requests
 
