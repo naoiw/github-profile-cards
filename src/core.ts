@@ -51,6 +51,11 @@ export function topN(all: LanguageStat[], opts: Options): LanguageStat[] {
   const ratio=tail.reduce((s,x)=>s+x.ratio,0);
   return opts.showOthers && count ? [...shown,{name:"Others",color:"#778899",count,ratio}] : shown;
 }
+
+export function cardSubtitle(all: LanguageStat[], opts: Options): string {
+  if (all.length <= opts.topN) return all.length + (all.length === 1 ? " language" : " languages");
+  return "Top " + opts.topN + " of " + all.length + " languages" + (opts.showOthers ? " + Others" : "");
+}
 function xml(s:string):string {
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
 }
@@ -62,12 +67,14 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
   const faint=dark?"#a6b3c1":"#57606a", border=dark?"#3d444d":"#d0d7de";
   const rail=dark?"#30363d":"#f0f2f5", heading=dark?"#58c7f5":"#0969da";
   const h=Math.max(300,110+items.length*29), w=780;
+  const metric=title.toLowerCase().includes("commit") ? "commits" : "repos";
+  const total=all.reduce((sum,entry)=>sum+entry.count,0);
   const p:string[]=[
     '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+xml(title)+'">',
     '<title>'+xml(title)+'</title>',
     '<rect x="0.5" y="0.5" width="779" height="'+(h-1)+'" rx="12" fill="'+bg+'" stroke="'+border+'"/>',
     '<text x="24" y="40" font-size="23" font-family="system-ui, sans-serif" font-weight="650" fill="'+heading+'">'+xml(title)+'</text>',
-    '<text x="24" y="64" font-size="12" font-family="system-ui, sans-serif" fill="'+faint+'">Top '+opts.topN+' · '+all.length+' languages · '+all.reduce((s,x)=>s+x.count,0).toLocaleString("en-US")+' total</text>'
+    '<text x="24" y="64" font-size="12" font-family="system-ui, sans-serif" fill="'+faint+'">'+cardSubtitle(all,opts)+'</text>'
   ];
   if (!items.length) p.push('<text x="24" y="140" fill="'+fg+'">No public language data available</text>');
   else if(chart==="donut") {
@@ -79,7 +86,8 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
       p.push('<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="none" stroke="'+item.color+'" stroke-width="43" stroke-dasharray="'+length.toFixed(3)+' '+(circ-length).toFixed(3)+'" stroke-dashoffset="'+(-offset).toFixed(3)+'" transform="rotate(-90 '+x+' '+y+')"/>');
       offset+=length;
     }
-    p.push('<text x="'+x+'" y="'+(y+6)+'" text-anchor="middle" font-size="19" font-family="system-ui, sans-serif" fill="'+fg+'">'+items.length+' entries</text>');
+    p.push('<text x="'+x+'" y="'+(y+2)+'" text-anchor="middle" font-size="21" font-family="system-ui, sans-serif" font-weight="600" fill="'+fg+'">'+total.toLocaleString("en-US")+'</text>');
+    p.push('<text x="'+x+'" y="'+(y+23)+'" text-anchor="middle" font-size="12" font-family="system-ui, sans-serif" fill="'+faint+'">'+metric+'</text>');
     items.forEach((item,i)=>{
       const y=99+i*29;
       p.push('<rect x="24" y="'+(y-12)+'" width="12" height="12" rx="2" fill="'+item.color+'"/>');
