@@ -23,12 +23,12 @@ npm run demo -- --username demo
 npm run gallery:check
 ```
 
-`npm run demo` generates synthetic SVG files under `cards/` without using GitHub credentials.
+`npm run demo` generates synthetic SVG files in the ignored `demo-output/{dark,light}/` directories without using GitHub credentials.
 
 To test with real public data, set `GITHUB_TOKEN` in your **local environment** and run:
 
 ```bash
-npm run generate -- --username YOUR_USERNAME --top-n 12 --theme dark
+npm run generate -- --username YOUR_USERNAME --top-n 12 --theme all
 ```
 
 Never commit tokens, raw private data, `.env` files, or sensitive account details. The CI runs the composite Action against a public GitHub account for integration coverage; tests may still be limited by GitHub API availability.
@@ -42,7 +42,7 @@ Never commit tokens, raw private data, `.env` files, or sensitive account detail
 - Never silently drop rare languages, private-data visibility constraints, or missing GraphQL pages.
 - Preserve CLI and Action inputs and output paths unless a breaking change is explicitly discussed.
 - Add or update unit tests for aggregation and rendering changes.
-- If you change the sample card layout, run `npm run gallery` and commit the generated SVGs in `docs/previews/`. CI verifies that the snapshots are current.
+- If you change the sample card layout, run `npm run gallery` and commit the generated SVGs in `profile-card-output/{dark,light}/`. CI verifies that the snapshots are current.
 - Document any behavior change in README or `docs/`; avoid speculative feature descriptions.
 
 ## Pull request workflow
