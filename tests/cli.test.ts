@@ -4,7 +4,7 @@ import {execFileSync,spawnSync} from "node:child_process";
 import {mkdtemp,readFile,rm,stat} from "node:fs/promises";
 
 async function withOutput(testCase:(output:string)=>Promise<void>):Promise<void> {
-  const output=await mkdtemp(".test-cards-");
+  const output=await mkdtemp("test-cards-");
   try {await testCase(output);}
   finally {await rm(output,{recursive:true,force:true});}
 }
