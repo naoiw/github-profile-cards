@@ -17,12 +17,12 @@ npm run demo -- --username demo
 npm run gallery:check
 ```
 
-`npm run demo` produces sample SVGs under `cards/` from synthetic data and needs no token. It is not a real-account benchmark.
+`npm run demo` produces all four SVGs under the ignored `demo-output/{dark,light}/` paths from synthetic data and needs no token. It will not overwrite the committed gallery. It is not a real-account benchmark.
 
 To generate real data, set `GITHUB_TOKEN` as an environment variable and run:
 
 ```bash
-npm run generate -- --username YOUR_USERNAME --top-n 12 --chart donut --theme dark
+npm run generate -- --username YOUR_USERNAME --top-n 12 --chart donut --theme all
 ```
 
 Do not paste tokens in source files or into public CI logs. If the caller job's `github.token` is insufficient for GraphQL contributions, an appropriately scoped read token can be passed as an Action secret.
@@ -36,11 +36,11 @@ npm run gallery
 npm run gallery:check
 ```
 
-Commit all four regenerated SVGs in `docs/previews/dark/` and `docs/previews/light/` when the renderer changes. CI verifies that the committed files match the current renderer. The README uses `<picture>` to show the theme-appropriate sample.
+Commit all four regenerated SVGs under `profile-card-output/dark/` and `profile-card-output/light/` when the renderer changes. CI verifies that the committed files match the current renderer. The root README displays both themes directly.
 
 ## CI
 
-On pull requests and pushes to `main`, CI runs syntax checks, unit tests, deterministic gallery checks, demo SVG generation, and a **live public GraphQL** smoke test of the composite Action. The live SVGs are uploaded as temporary workflow artifacts for review. A successful CI run does **not** update the user's profile repository.
+On pull requests and pushes to `main`, CI runs syntax checks, unit tests, deterministic gallery checks, demo SVG generation, and a **live public GraphQL** smoke test of the composite Action. The live SVGs are generated with `theme: all` and uploaded as temporary workflow artifacts for review. A successful CI run does **not** update the user's profile repository.
 
 Note: `npm run check` checks syntax, not static types. This MVP currently has no separate `tsc --noEmit` stage. Tests cannot guarantee that GitHub's API will always be reachable in every environment.
 
