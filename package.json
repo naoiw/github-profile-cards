@@ -1,0 +1,15 @@
+{
+  "name": "github-profile-cards",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=26 <27"
+  },
+  "scripts": {
+    "generate": "node src/cli.ts",
+    "demo": "node src/cli.ts --demo",
+    "test": "node --test tests/*.test.ts",
+    "check": "node --check src/github.ts && node --check src/core.ts && node --check src/cli.ts"
+  }
+}
