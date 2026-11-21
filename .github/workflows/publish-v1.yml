@@ -1,0 +1,103 @@
+# One-time initial stable-release bootstrap. The release/tag checks are idempotent.
+# This workflow only runs automatically when this workflow file is added/updated
+# on main; it never publishes releases for ordinary code changes.
+name: Publish initial v1.0.0 release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: initial-v1-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'naoiw/github-profile-cards' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Validate release version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node -p 'require("./package.json").version')" = "1.0.0"
+          test -f docs/RELEASE_v1.0.0.md
+          test "$GITHUB_REF" = "refs/heads/main"
+      - name: Run static checks, unit tests and gallery consistency check
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund --package-lock=false
+          npm run check
+          npm run typecheck
+          npm test
+          npm run gallery:check
+      - name: Smoke test all generated card themes on the release candidate
+        uses: ./
+        with:
+          username: naoiw
+          theme: all
+          output-dir: release-smoke
+      - name: Verify all four candidate outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for theme in dark light; do
+            for metric in repo commit; do
+              svg="release-smoke/$theme/languages-by-$metric.svg"
+              test -s "$svg"
+              grep -q '<svg ' "$svg"
+            done
+          done
+      - name: Independently verify public repository-language metrics
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run verify -- --username naoiw
+      - name: Create v1.0.0 GitHub Release and v1 major alias
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view v1.0.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'v1.0.0 release already exists; verifying tags'
+          else
+            if git ls-remote --exit-code --tags origin refs/tags/v1.0.0 >/dev/null 2>&1; then
+              echo 'v1.0.0 tag already exists without a release; refusing to overwrite it' >&2
+              exit 1
+            fi
+            gh release create v1.0.0 \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title 'GitHub Profile Cards v1.0.0' \
+              --notes-file docs/RELEASE_v1.0.0.md \
+              --latest
+          fi
+
+          git fetch origin tag v1.0.0
+          release_sha="$(git rev-parse 'v1.0.0^{commit}')"
+          if git ls-remote --exit-code --tags origin refs/tags/v1 >/dev/null 2>&1; then
+            git fetch origin tag v1
+            major_sha="$(git rev-parse 'v1^{commit}')"
+            if [ "$major_sha" != "$release_sha" ]; then
+              echo 'Existing v1 alias does not point to v1.0.0; refusing to move it automatically' >&2
+              exit 1
+            fi
+            echo "Existing v1 major alias verified: $major_sha"
+          else
+            git tag v1 "$release_sha"
+            git push origin refs/tags/v1
+            echo "Created v1 major alias at $release_sha"
+          fi
