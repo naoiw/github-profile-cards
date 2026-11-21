@@ -19,14 +19,14 @@ jobs:
           username: ${{ github.repository_owner }}
           top-n: '12'
           chart: donut
-          theme: dark
-          output-dir: cards
+          theme: all
+          output-dir: profile-card-output
           # Optional for private/restricted GraphQL contributions:
           # token: ${{ secrets.PROFILE_CARDS_TOKEN }}
       - name: Commit generated SVGs
         shell: bash
         run: |
-          git add cards/languages-by-repo.svg cards/languages-by-commit.svg
+          git add profile-card-output/
           if git diff --cached --quiet; then exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

@@ -21,10 +21,10 @@ async function main():Promise<void> {
   const topN=Number(option("top-n","12"));
   if(!Number.isInteger(topN)||topN<1||topN>30) throw new Error("top-n must be 1 through 30");
   const chart=option("chart","donut") as GraphStyle;
-  const theme=option("theme","dark") as CardTheme;
+  const theme=option("theme","all");
   if(chart!=="donut"&&chart!=="bars") throw new Error("Invalid chart; choose donut or bars");
-  if(theme!=="dark"&&theme!=="light") throw new Error("Invalid theme; choose dark or light");
-  const out=option("output-dir","cards");
+  if(theme!=="all"&&theme!=="dark"&&theme!=="light") throw new Error("Invalid theme; choose all, dark or light");
+  const out=option("output-dir","profile-card-output");
   if(!/^[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/.test(out)) throw new Error("output-dir must be a relative directory without traversal");
   const settings:Options={topN,showOthers:!flag("hide-others"),includeArchived:!flag("exclude-archived"),excludeRepos:list("exclude-repos"),excludeLanguages:list("exclude-languages")};
   let repos:RepoEntry[],commits:CommitEntry[];
@@ -40,13 +40,18 @@ async function main():Promise<void> {
     repos=await client.repositories(username);
     commits=await client.commitContributions(username);
   }
-  await mkdir(resolve(out),{recursive:true});
-  for(const {filename,title,stats} of [
+  const cards=[
     {filename:"languages-by-repo.svg",title:"Top Languages by Repo",stats:byRepo(repos,settings)},
     {filename:"languages-by-commit.svg",title:"Top Languages by Commit",stats:byCommit(commits,settings)}
-  ]) {
-    await writeFile(resolve(out,filename),renderSvg(title,stats,settings,chart,theme),"utf8");
-    console.log(filename+": "+stats.length+" languages");
+  ];
+  const themes:CardTheme[]=theme==="all" ? ["dark","light"] : [theme];
+  for(const selectedTheme of themes) {
+    const directory=resolve(out,selectedTheme);
+    await mkdir(directory,{recursive:true});
+    for(const {filename,title,stats} of cards) {
+      await writeFile(resolve(directory,filename),renderSvg(title,stats,settings,chart,selectedTheme),"utf8");
+      console.log(selectedTheme+"/"+filename+": "+stats.length+" languages");
+    }
   }
   if(flag("demo")) console.log("Demo uses synthetic sample data, not real user data.");
 }

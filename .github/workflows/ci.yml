@@ -19,28 +19,36 @@ jobs:
           node-version-file: .nvmrc
       - run: npm run check
       - run: npm test
-      - run: npm run demo -- --username demo
-      - name: Validate SVG artifacts
+      - run: npm run gallery:check
+      - run: npm run demo -- --username demo --theme all
+      - name: Validate all demo SVGs
         run: |
-          test -s cards/languages-by-repo.svg
-          test -s cards/languages-by-commit.svg
-          grep -q '<svg ' cards/languages-by-repo.svg
-          grep -q '<svg ' cards/languages-by-commit.svg
+          for theme in dark light; do
+            for kind in repo commit; do
+              svg="demo-output/$theme/languages-by-$kind.svg"
+              test -s "$svg"
+              grep -q '<svg ' "$svg"
+            done
+          done
       - name: Test composite Action with live public GitHub data
         uses: ./
         with:
           username: naoiw
           top-n: '12'
+          theme: all
           output-dir: live-cards
-      - name: Validate live SVG artifacts
+      - name: Validate all live SVGs
         run: |
-          test -s live-cards/languages-by-repo.svg
-          test -s live-cards/languages-by-commit.svg
-          grep -q '<svg ' live-cards/languages-by-repo.svg
-          grep -q '<svg ' live-cards/languages-by-commit.svg
+          for theme in dark light; do
+            for kind in repo commit; do
+              svg="live-cards/$theme/languages-by-$kind.svg"
+              test -s "$svg"
+              grep -q '<svg ' "$svg"
+            done
+          done
       - name: Upload live preview SVGs
         uses: actions/upload-artifact@v7
         with:
           name: language-cards-live-preview
-          path: live-cards/*.svg
+          path: live-cards/**/*.svg
           retention-days: 7
