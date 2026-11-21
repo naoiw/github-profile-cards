@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {byRepo,byCommit,topN,renderSvg,cardSubtitle} from "../src/core.ts";
+import {byRepo,byCommit,topN,renderSvg,cardSubtitle,percentLabel} from "../src/core.ts";
 import type {Options,RepoEntry} from "../src/core.ts";
 
 const opts:Options={topN:2,showOthers:true,includeArchived:false,excludeRepos:["owner/ignored"],excludeLanguages:[]};
@@ -74,4 +74,11 @@ test("30 language layout keeps all rows within SVG height",()=>{
   assert.ok(height>=1000);
   assert.match(svg,/Language29/);
   assert.match(svg,/0\.?0?%|3\.3%/);
+});
+
+test("sub-0.1% long-tail values are not misleadingly shown as zero",()=>{
+  assert.equal(percentLabel(35/1234602),"<0.1%");
+  assert.equal(percentLabel(1234567/1234602),">99.9%");
+  assert.equal(percentLabel(0),"0.0%");
+  assert.equal(percentLabel(0.135),"13.5%");
 });
