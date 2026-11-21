@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="313" viewBox="0 0 780 313" role="img" aria-label="Top Languages by Repo">
+<title>Top Languages by Repo</title>
+<rect x="0.5" y="0.5" width="779" height="312" rx="12" fill="#21262d" stroke="#3d444d"/>
+<text x="24" y="40" font-size="23" font-family="system-ui, sans-serif" font-weight="650" fill="#58c7f5">Top Languages by Repo</text>
+<text x="24" y="64" font-size="12" font-family="system-ui, sans-serif" fill="#a6b3c1">Top 12 · 7 languages · 23 total</text>
+<circle cx="610" cy="167" r="99" fill="none" stroke="#30363d" stroke-width="43"/>
+<circle cx="610" cy="167" r="99" fill="none" stroke="#3178c6" stroke-width="43" stroke-dasharray="405.675 216.360" stroke-dashoffset="0.000" transform="rotate(-90 610 167)"/>
+<circle cx="610" cy="167" r="99" fill="none" stroke="#f1e05a" stroke-width="43" stroke-dasharray="81.135 540.900" stroke-dashoffset="-405.675" transform="rotate(-90 610 167)"/>
+<circle cx="610" cy="167" r="99" fill="none" stroke="#244776" stroke-width="43" stroke-dasharray="27.045 594.990" stroke-dashoffset="-486.810" transform="rotate(-90 610 167)"/>
+<circle cx="610" cy="167" r="99" fill="none" stroke="#663399" stroke-width="43" stroke-dasharray="27.045 594.990" stroke-dashoffset="-513.855" transform="rotate(-90 610 167)"/>
+<circle cx="610" cy="167" r="99" fill="none" stroke="#499886" stroke-width="43" stroke-dasharray="27.045 594.990" stroke-dashoffset="-540.900" transform="rotate(-90 610 167)"/>
+<circle cx="610" cy="167" r="99" fill="none" stroke="#ffc200" stroke-width="43" stroke-dasharray="27.045 594.990" stroke-dashoffset="-567.945" transform="rotate(-90 610 167)"/>
+<circle cx="610" cy="167" r="99" fill="none" stroke="#dea584" stroke-width="43" stroke-dasharray="27.045 594.990" stroke-dashoffset="-594.990" transform="rotate(-90 610 167)"/>
+<text x="610" y="173" text-anchor="middle" font-size="19" font-family="system-ui, sans-serif" fill="#e6edf3">7 entries</text>
+<rect x="24" y="87" width="12" height="12" rx="2" fill="#3178c6"/>
+<text x="46" y="99" font-size="14" font-family="system-ui, sans-serif" fill="#e6edf3"><title>TypeScript</title>TypeScript</text>
+<text x="440" y="99" text-anchor="end" font-size="13" font-family="system-ui, sans-serif" fill="#a6b3c1">15 · 65.2%</text>
+<rect x="24" y="116" width="12" height="12" rx="2" fill="#f1e05a"/>
+<text x="46" y="128" font-size="14" font-family="system-ui, sans-serif" fill="#e6edf3"><title>JavaScript</title>JavaScript</text>
+<text x="440" y="128" text-anchor="end" font-size="13" font-family="system-ui, sans-serif" fill="#a6b3c1">3 · 13.0%</text>
+<rect x="24" y="145" width="12" height="12" rx="2" fill="#244776"/>
+<text x="46" y="157" font-size="14" font-family="system-ui, sans-serif" fill="#e6edf3"><title>CoffeeScript</title>CoffeeScript</text>
+<text x="440" y="157" text-anchor="end" font-size="13" font-family="system-ui, sans-serif" fill="#a6b3c1">1 · 4.3%</text>
+<rect x="24" y="174" width="12" height="12" rx="2" fill="#663399"/>
+<text x="46" y="186" font-size="14" font-family="system-ui, sans-serif" fill="#e6edf3"><title>CSS</title>CSS</text>
+<text x="440" y="186" text-anchor="end" font-size="13" font-family="system-ui, sans-serif" fill="#a6b3c1">1 · 4.3%</text>
+<rect x="24" y="203" width="12" height="12" rx="2" fill="#499886"/>
+<text x="46" y="215" font-size="14" font-family="system-ui, sans-serif" fill="#e6edf3"><title>LiveScript</title>LiveScript</text>
+<text x="440" y="215" text-anchor="end" font-size="13" font-family="system-ui, sans-serif" fill="#a6b3c1">1 · 4.3%</text>
+<rect x="24" y="232" width="12" height="12" rx="2" fill="#ffc200"/>
+<text x="46" y="244" font-size="14" font-family="system-ui, sans-serif" fill="#e6edf3"><title>Nim</title>Nim</text>
+<text x="440" y="244" text-anchor="end" font-size="13" font-family="system-ui, sans-serif" fill="#a6b3c1">1 · 4.3%</text>
+<rect x="24" y="261" width="12" height="12" rx="2" fill="#dea584"/>
+<text x="46" y="273" font-size="14" font-family="system-ui, sans-serif" fill="#e6edf3"><title>Rust</title>Rust</text>
+<text x="440" y="273" text-anchor="end" font-size="13" font-family="system-ui, sans-serif" fill="#a6b3c1">1 · 4.3%</text>
+</svg>

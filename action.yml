@@ -1,0 +1,69 @@
+name: GitHub Profile Cards
+description: Generate Top N Languages by Repo and Commit SVG cards
+author: naoiw
+
+inputs:
+  username:
+    description: GitHub user login
+    required: false
+    default: ${{ github.repository_owner }}
+  token:
+    description: GitHub GraphQL read token; defaults to the workflow job token
+    required: false
+  top-n:
+    description: Number of named languages (1 through 30)
+    default: '12'
+  chart:
+    description: donut or bars
+    default: donut
+  theme:
+    description: dark or light
+    default: dark
+  output-dir:
+    description: Relative output directory inside the caller repository
+    default: cards
+  hide-others:
+    description: Do not combine hidden languages into an Others category
+    default: 'false'
+  exclude-archived:
+    description: Exclude archived repositories
+    default: 'false'
+  exclude-repos:
+    description: Comma-separated repository names to omit
+    default: ''
+  exclude-languages:
+    description: Comma-separated language names to omit
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js 26
+      uses: actions/setup-node@v7
+      with:
+        node-version: '26'
+    - name: Generate SVG cards
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token || github.token }}
+        INPUT_USERNAME: ${{ inputs.username }}
+        INPUT_TOP_N: ${{ inputs.top-n }}
+        INPUT_CHART: ${{ inputs.chart }}
+        INPUT_THEME: ${{ inputs.theme }}
+        INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
+        INPUT_HIDE_OTHERS: ${{ inputs.hide-others }}
+        INPUT_EXCLUDE_ARCHIVED: ${{ inputs.exclude-archived }}
+        INPUT_EXCLUDE_REPOS: ${{ inputs.exclude-repos }}
+        INPUT_EXCLUDE_LANGUAGES: ${{ inputs.exclude-languages }}
+      run: |
+        extra=()
+        if [[ "$INPUT_HIDE_OTHERS" == "true" ]]; then extra+=(--hide-others); fi
+        if [[ "$INPUT_EXCLUDE_ARCHIVED" == "true" ]]; then extra+=(--exclude-archived); fi
+        if [[ -n "$INPUT_EXCLUDE_REPOS" ]]; then extra+=(--exclude-repos "$INPUT_EXCLUDE_REPOS"); fi
+        if [[ -n "$INPUT_EXCLUDE_LANGUAGES" ]]; then extra+=(--exclude-languages "$INPUT_EXCLUDE_LANGUAGES"); fi
+        node "$GITHUB_ACTION_PATH/src/cli.ts" \
+          --username "$INPUT_USERNAME" \
+          --top-n "$INPUT_TOP_N" \
+          --chart "$INPUT_CHART" \
+          --theme "$INPUT_THEME" \
+          --output-dir "$INPUT_OUTPUT_DIR" "${extra[@]}"

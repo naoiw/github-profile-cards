@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: npm run check
+      - run: npm test
+      - run: npm run demo -- --username demo
+      - name: Validate SVG artifacts
+        run: |
+          test -s cards/languages-by-repo.svg
+          test -s cards/languages-by-commit.svg
+          grep -q '<svg ' cards/languages-by-repo.svg
+          grep -q '<svg ' cards/languages-by-commit.svg
+      - name: Test composite Action with live public GitHub data
+        uses: ./
+        with:
+          username: naoiw
+          top-n: '12'
+          output-dir: live-cards
+      - name: Validate live SVG artifacts
+        run: |
+          test -s live-cards/languages-by-repo.svg
+          test -s live-cards/languages-by-commit.svg
+          grep -q '<svg ' live-cards/languages-by-repo.svg
+          grep -q '<svg ' live-cards/languages-by-commit.svg
+      - name: Upload live preview SVGs
+        uses: actions/upload-artifact@v7
+        with:
+          name: language-cards-live-preview
+          path: live-cards/*.svg
+          retention-days: 7
