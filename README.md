@@ -55,7 +55,7 @@ The Action generates local SVG files. The **calling workflow** commits them to y
 
 ### Generated files
 
-By default, one execution writes **all four SVGs**, after fetching each GitHub dataset only once:
+By default, one execution writes **all four SVGs** using the same data collected during that run:
 
 ```text
 profile-card-output/
@@ -104,7 +104,7 @@ npm run demo -- --username demo
 npm run gallery:check
 ```
 
-The demo uses synthetic values, writes all four SVGs by default, and does not contact GitHub. For live data, set `GITHUB_TOKEN` and run:
+The demo uses synthetic values, writes all four SVGs under `demo-output/` (both themes), and does not contact GitHub. It never overwrites the committed README gallery. For live data, set `GITHUB_TOKEN` and run:
 
 ```bash
 npm run generate -- --username YOUR_USERNAME --top-n 12
