@@ -12,12 +12,14 @@ Thanks for considering a contribution! Bug reports, test cases, documentation im
 
 - **Node.js 26** is required (see `.nvmrc` and `package.json`).
 - The project is TypeScript, executed with Node's native type stripping.
-- There are no runtime npm dependencies and no app deployment.
+- There are no runtime npm dependencies and no app deployment. Install development dependencies for static checking.
 
 Run these commands before opening a PR:
 
 ```bash
+npm install --no-audit --no-fund
 npm run check
+npm run typecheck
 npm test
 npm run demo -- --username demo
 npm run gallery:check
