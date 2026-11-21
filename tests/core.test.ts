@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {byRepo,byCommit,topN,renderSvg,cardSubtitle,percentLabel,normalizeLanguageColor,UNKNOWN_LANGUAGE_COLOR} from "../src/core.ts";
+import {byRepo,byCommit,topN,renderSvg,cardSubtitle,percentLabel,normalizeLanguageColor,UNKNOWN_LANGUAGE_COLOR,shorten} from "../src/core.ts";
 import type {Options,RepoEntry} from "../src/core.ts";
 
 const opts:Options={topN:2,showOthers:true,includeArchived:false,excludeRepos:["owner/ignored"],excludeLanguages:[]};
@@ -108,4 +108,25 @@ test("SVG rendering rejects unsafe colors from direct renderer input",()=>{
     assert.match(svg,/&lt;untrusted&gt;/);
     assert.match(svg,/#87929c/);
   }
+});
+
+test("long language names have bounded labels and retain original SVG titles",()=>{
+  const label="A very long language name with 漢字 and extra characters";
+  assert.equal(shorten("Rust",198),"Rust");
+  assert.ok(shorten(label,198).endsWith("…"));
+  const stats=[{name:label,color:"#aabbcc",count:35,ratio:1}];
+  for(const chart of ["donut","bars"] as const) {
+    for(const theme of ["dark","light"] as const) {
+      const svg=renderSvg("Top Languages by Repo",stats,{...opts,topN:12},chart,theme);
+      assert.match(svg,/clipPath id="language-label-region"/);
+      assert.match(svg,/clip-path="url\(#language-label-region\)"/);
+      assert.match(svg,/A very long language name with 漢字 and extra characters<\/title>/);
+      assert.match(svg,/…/);
+    }
+  }
+});
+test("large donut totals use smaller center text to remain legible",()=>{
+  const one=[{name:"TypeScript",color:"#3178c6",count:1234567890123,ratio:1}];
+  const svg=renderSvg("Top Languages by Commit",one,{...opts,topN:12},"donut","dark");
+  assert.match(svg,/font-size="16"[^>]*>1,234,567,890,123<\/text>/);
 });
