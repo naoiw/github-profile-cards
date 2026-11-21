@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: naoiw/github-profile-cards@main
+      # Pin this workflow to a stable version; use @v1 for future v1-compatible updates.
+      - uses: naoiw/github-profile-cards@v1.0.0
         with:
           username: ${{ github.repository_owner }}
           top-n: '12'
