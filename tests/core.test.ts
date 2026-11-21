@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {byRepo,byCommit,topN,renderSvg,cardSubtitle,percentLabel} from "../src/core.ts";
+import {byRepo,byCommit,topN,renderSvg,cardSubtitle,percentLabel,normalizeLanguageColor,UNKNOWN_LANGUAGE_COLOR} from "../src/core.ts";
 import type {Options,RepoEntry} from "../src/core.ts";
 
 const opts:Options={topN:2,showOthers:true,includeArchived:false,excludeRepos:["owner/ignored"],excludeLanguages:[]};
@@ -81,4 +81,31 @@ test("sub-0.1% long-tail values are not misleadingly shown as zero",()=>{
   assert.equal(percentLabel(1234567/1234602),">99.9%");
   assert.equal(percentLabel(0),"0.0%");
   assert.equal(percentLabel(0.135),"13.5%");
+});
+
+test("GitHub colors and rare languages are handled without a whitelist",()=>{
+  assert.equal(normalizeLanguageColor("#A1B2C3"),"#a1b2c3");
+  assert.equal(normalizeLanguageColor("#abc"),"#aabbcc");
+  assert.equal(normalizeLanguageColor(null),null);
+  assert.equal(normalizeLanguageColor("url(javascript:alert(1))"),null);
+  const entries=[
+    repo("o/a","Haxe",{primaryLanguage:{name:"Haxe",color:null}}),
+    repo("o/b","Haxe",{primaryLanguage:{name:"Haxe",color:"#AABBCC"}}),
+    repo("o/c","Brainfuck",{primaryLanguage:{name:"Brainfuck",color:"bad-color"}}),
+    repo("o/d","C++",{primaryLanguage:{name:"C++",color:"#f34b7d"}})
+  ];
+  const all=byRepo(entries,{...opts,topN:12});
+  assert.equal(all.find(s=>s.name==="Haxe")?.color,"#aabbcc");
+  assert.equal(all.find(s=>s.name==="Brainfuck")?.color,UNKNOWN_LANGUAGE_COLOR);
+  assert.equal(all.find(s=>s.name==="C++")?.color,"#f34b7d");
+  assert.equal(all.reduce((sum,s)=>sum+s.count,0),4);
+});
+test("SVG rendering rejects unsafe colors from direct renderer input",()=>{
+  const data=[{name:"<untrusted>",color:"url(javascript:alert(1))",count:1,ratio:1}];
+  for(const chart of ["donut","bars"] as const) {
+    const svg=renderSvg("Top Languages by Repo",data,{...opts,topN:12},chart,"light");
+    assert.doesNotMatch(svg,/javascript:/);
+    assert.match(svg,/&lt;untrusted&gt;/);
+    assert.match(svg,/#87929c/);
+  }
 });
