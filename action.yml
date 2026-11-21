@@ -1,0 +1,48 @@
+name: GitHub Profile Cards
+description: Generate Top N Languages by Repo and Commit SVG cards
+author: naoiw
+
+inputs:
+  username:
+    description: GitHub user login
+    required: false
+    default: ${{ github.repository_owner }}
+  token:
+    description: GitHub GraphQL read token; defaults to the workflow job token
+    required: false
+  top-n:
+    description: Number of named languages (1 through 30)
+    default: '12'
+  chart:
+    description: donut or bars
+    default: donut
+  theme:
+    description: dark or light
+    default: dark
+  output-dir:
+    description: Relative output directory inside the caller repository
+    default: cards
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js 26
+      uses: actions/setup-node@v7
+      with:
+        node-version: '26'
+    - name: Generate SVG cards
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token || github.token }}
+        INPUT_USERNAME: ${{ inputs.username }}
+        INPUT_TOP_N: ${{ inputs.top-n }}
+        INPUT_CHART: ${{ inputs.chart }}
+        INPUT_THEME: ${{ inputs.theme }}
+        INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
+      run: |
+        node "$GITHUB_ACTION_PATH/src/cli.ts" \
+          --username "$INPUT_USERNAME" \
+          --top-n "$INPUT_TOP_N" \
+          --chart "$INPUT_CHART" \
+          --theme "$INPUT_THEME" \
+          --output-dir "$INPUT_OUTPUT_DIR"
