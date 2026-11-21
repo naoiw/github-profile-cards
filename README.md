@@ -69,7 +69,7 @@ For real data, export GITHUB_TOKEN and run:
 | --exclude-languages | empty | Comma-separated language names |
 | --demo | false | Generate synthetic test results without GraphQL |
 
-The Action's MVP inputs are username, token, top-n, chart, theme and output-dir; additional filters are currently CLI-only.
+The Action exposes username, token, top-n, chart, theme, output-dir, hide-others, exclude-archived, exclude-repos and exclude-languages. Both the Action and CLI use identical aggregation rules.
 
 ## Preview from CI
 
