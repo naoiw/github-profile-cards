@@ -22,6 +22,18 @@ inputs:
   output-dir:
     description: Relative output directory inside the caller repository
     default: cards
+  hide-others:
+    description: Do not combine hidden languages into an Others category
+    default: 'false'
+  exclude-archived:
+    description: Exclude archived repositories
+    default: 'false'
+  exclude-repos:
+    description: Comma-separated repository names to omit
+    default: ''
+  exclude-languages:
+    description: Comma-separated language names to omit
+    default: ''
 
 runs:
   using: composite
@@ -39,10 +51,19 @@ runs:
         INPUT_CHART: ${{ inputs.chart }}
         INPUT_THEME: ${{ inputs.theme }}
         INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
+        INPUT_HIDE_OTHERS: ${{ inputs.hide-others }}
+        INPUT_EXCLUDE_ARCHIVED: ${{ inputs.exclude-archived }}
+        INPUT_EXCLUDE_REPOS: ${{ inputs.exclude-repos }}
+        INPUT_EXCLUDE_LANGUAGES: ${{ inputs.exclude-languages }}
       run: |
+        extra=()
+        if [[ "$INPUT_HIDE_OTHERS" == "true" ]]; then extra+=(--hide-others); fi
+        if [[ "$INPUT_EXCLUDE_ARCHIVED" == "true" ]]; then extra+=(--exclude-archived); fi
+        if [[ -n "$INPUT_EXCLUDE_REPOS" ]]; then extra+=(--exclude-repos "$INPUT_EXCLUDE_REPOS"); fi
+        if [[ -n "$INPUT_EXCLUDE_LANGUAGES" ]]; then extra+=(--exclude-languages "$INPUT_EXCLUDE_LANGUAGES"); fi
         node "$GITHUB_ACTION_PATH/src/cli.ts" \
           --username "$INPUT_USERNAME" \
           --top-n "$INPUT_TOP_N" \
           --chart "$INPUT_CHART" \
           --theme "$INPUT_THEME" \
-          --output-dir "$INPUT_OUTPUT_DIR"
+          --output-dir "$INPUT_OUTPUT_DIR" "${extra[@]}"
