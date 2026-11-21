@@ -2,104 +2,100 @@
 
 **More languages. Less noise.**
 
-Create GitHub profile cards that highlight the **long tail of programming languages** instead of Stars, streaks, or contribution-growth graphs. Pick your Top N, theme, and chart layout. Generate standalone SVGs with GitHub Actions—**no server or deployment required**.
-
-Built with TypeScript on **Node.js 26**. Inspired by the GitHub GraphQL approach of [github-profile-summary-cards](https://github.com/vn7n24fzkq/github-profile-summary-cards), with an independently implemented renderer.
+Generate customizable SVG cards for a GitHub profile, focused on the **long tail of programming languages** rather than Stars, streaks, or activity graphs. Built with TypeScript and **Node.js 26**, and distributed as a GitHub Action. No server or app deployment is required.
 
 ## Gallery
 
-These are **real output examples** generated from `naoiw`'s public GitHub data with the default settings (Top 12, dark theme, donut chart). The SVGs are committed to this repository, so they stay visible without downloading a CI artifact.
+Two real examples generated from [naoiw](https://github.com/naoiw)'s **public** GitHub data. GitHub automatically shows a matching light or dark card.
 
 ### Top Languages by Repo
 
-Each repository counts once, using its primary language.
+Each owned, non-fork repository contributes one count for its *primary language*.
 
-![Top Languages by Repo — sample SVG](docs/previews/languages-by-repo.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/previews/dark/languages-by-repo.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/previews/light/languages-by-repo.svg">
+  <img alt="Top Languages by Repo: sample donut chart" src="docs/previews/light/languages-by-repo.svg">
+</picture>
 
 ### Top Languages by Commit
 
-GitHub commit contributions are grouped by the repository's primary language, **not** by languages of individual changed files.
+GitHub commit contributions are attributed to the *repository's primary language*—**not the language of each changed file**.
 
-![Top Languages by Commit — sample SVG](docs/previews/languages-by-commit.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/previews/dark/languages-by-commit.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/previews/light/languages-by-commit.svg">
+  <img alt="Top Languages by Commit: sample donut chart" src="docs/previews/light/languages-by-commit.svg">
+</picture>
 
-<sub>Sample snapshot: 2026-11-21. These gallery images are static examples, not automatically refreshed metrics. See [the CI preview artifact](#preview-from-ci) for newly generated samples.</sub>
+<sub>Static sample snapshot: 2026-11-21. These SVGs are committed to the repository; the PR CI also generates fresh previews as downloadable artifacts.</sub>
 
+## Quick start: use in your profile
 
-## Features
+1. Copy [examples/profile-workflow.yml](examples/profile-workflow.yml) to the profile repository `YOUR_USERNAME/YOUR_USERNAME` as `.github/workflows/profile-cards.yml`.
+2. Set the Action `username`, `top-n`, `chart` and `theme` inputs as desired.
+3. Trigger the workflow once using **Actions → Update profile cards → Run workflow**. Scheduled runs will refresh the SVGs afterwards.
+4. Add the generated images to your profile `README.md`:
 
-Generates two SVG cards:
+```markdown
+![Languages by Repo](./cards/languages-by-repo.svg)
+![Languages by Commit](./cards/languages-by-commit.svg)
+```
 
-| SVG | Metric |
-| --- | --- |
-| cards/languages-by-repo.svg | Number of owned non-fork repositories, grouped by primary language |
-| cards/languages-by-commit.svg | GitHub commit contributions assigned to each repository's primary language |
+The sample workflow commits the generated files to **your** profile repository; this generator's Action only writes local output files and does **not** push. The caller needs `permissions: contents: write` to commit SVGs. Pin the Action to a tested full commit SHA or versioned release for long-term use; the example's `@main` follows the latest code.
 
-**By Commit is not a changed-file language analysis**. It counts eligible commit contributions by the primary language of the repository. This matches the original Summary Cards concept.
+### Action configuration
 
-Both cards support:
-- Configurable **Top N (1–30)**; default Top 12, plus **Others** for the long tail
-- Donut or horizontal-bar layouts
-- Dark or light themes
-- Whole-distribution percentage denominators
-
-Private repositories are excluded by design. Archived repositories are included unless explicitly excluded via CLI. Stars, profile growth, and time-of-day graphs are out of scope.
-
-## Use from another GitHub repository
-
-No hosted service is required. Copy [examples/profile-workflow.yml](examples/profile-workflow.yml) into the profile repository as .github/workflows/profile-cards.yml.
-
-The example:
-1. Uses this repository as a reusable **composite Action**.
-2. Runs TypeScript directly under Node.js 26.
-3. Fetches data with GitHub GraphQL.
-4. Commits the generated SVG files into the caller's repository on a schedule.
-
-Once the workflow has run successfully, put these images in your profile README:
-
-    ![Languages by Repo](./cards/languages-by-repo.svg)
-    ![Languages by Commit](./cards/languages-by-commit.svg)
-
-For now the example references the Action's @main branch. For production usage pin to an audited commit SHA or release tag once available. The calling job needs contents: write to commit SVG files. The Action itself never pushes files.
-
-The Action attempts the caller job's GitHub token for public GraphQL data. If that token is insufficient, provide a token with appropriate read permissions using the optional Action input named token. Keep secrets in GitHub Actions secrets, never in source.
-
-## Local use
-
-Requires Node.js 26 (.nvmrc). Native TypeScript type stripping is used.
-
-Run tests and generate **synthetic example data** (not real user metrics):
-
-    npm run check
-    npm test
-    npm run demo -- --username demo
-
-For real data, export GITHUB_TOKEN and run:
-
-    npm run generate -- --username naoiw --top-n 12 --chart donut --theme dark --output-dir cards
-
-| CLI option | Default | Meaning |
+| Input | Default | Description |
 | --- | --- | --- |
-| --username | GITHUB_REPOSITORY_OWNER | GitHub account |
-| --top-n | 12 | Number of named languages, 1–30 |
-| --chart | donut | donut / bars |
-| --theme | dark | dark / light |
-| --output-dir | cards | Relative output directory |
-| --hide-others | false | Hide the long-tail Others category |
-| --exclude-archived | false | Ignore archived repositories |
-| --exclude-repos | empty | Comma-separated repo names or owner/repo |
-| --exclude-languages | empty | Comma-separated language names |
-| --demo | false | Generate synthetic test results without GraphQL |
+| `username` | Current repository owner | GitHub account to analyze |
+| `token` | Calling workflow's `github.token` | Read token for GitHub GraphQL |
+| `top-n` | `12` | Maximum named languages (1–30) |
+| `chart` | `donut` | `donut` or `bars` |
+| `theme` | `dark` | `dark` or `light` |
+| `output-dir` | `cards` | Relative output directory |
+| `hide-others` | `false` | Hide the long-tail Others category |
+| `exclude-archived` | `false` | Exclude archived repositories |
+| `exclude-repos` | Empty | Comma-separated repositories |
+| `exclude-languages` | Empty | Comma-separated language names |
 
-The Action exposes username, token, top-n, chart, theme, output-dir, hide-others, exclude-archived, exclude-repos and exclude-languages. Both the Action and CLI use identical aggregation rules.
+The caller's `github.token` is tried by default for public data. If it cannot access the required GraphQL contributions, pass a separately configured, appropriately scoped read token using the `token` input. Never commit tokens into the repository.
 
-## Preview from CI
+To display automatically switching light/dark cards in your own profile, generate **both** themes with separate Action calls and different `output-dir` values, then embed them with the `<picture>` approach used by this gallery. The MVP does not produce both themes in one Action invocation.
 
-The pull-request CI also runs the composite Action against public GitHub data (account: naoiw) and uploads the resulting two SVG files as a downloadable **language-cards-live-preview** artifact. This does not modify the profile repository. The sample metrics are regenerated at CI time.
+## What the statistics mean
 
-## Development
+- **By Repo:** Count of *owned non-fork public repositories* by their GitHub `primaryLanguage`. Unclassified repositories do not contribute.
+- **By Commit:** Eligible GitHub commit contributions per repository, assigned to each repository's `primaryLanguage`. Contributions to other owners' repositories may count. It does **not** inspect changed file extensions or changed lines.
+- **Percentages:** Always use the full included language distribution as the denominator. `Others` groups categories beyond the Top N cap. Tiny nonzero shares are shown as `<0.1%` rather than `0.0%`.
+- **Languages and colors:** Language names and primary colors come from GitHub GraphQL, not from a hard-coded language whitelist. Unknown colors receive a neutral fallback. Private repositories are excluded in the current release.
 
-- [Architecture and data semantics](docs/ARCHITECTURE.md)
-- [Development and verification](docs/DEVELOPMENT.md)
-- [Shared repository standards](https://github.com/naoiw/.github)
+The output always consists of `languages-by-repo.svg` and `languages-by-commit.svg` inside the selected output directory.
 
-MIT License (see LICENSE).
+## Local development
+
+Requires **Node.js 26** (see `.nvmrc`). The runtime uses Node's native TypeScript type stripping; there is no application build or npm dependency installation.
+
+```bash
+npm run check
+npm test
+npm run demo -- --username demo
+npm run gallery:check
+```
+
+The demo uses **synthetic values** without hitting GitHub. For a live run, set a `GITHUB_TOKEN` environment variable and execute:
+
+```bash
+npm run generate -- --username naoiw --top-n 12 --chart donut --theme dark
+```
+
+You can refresh the committed sample gallery with `npm run gallery` (it uses the frozen public example dataset, not your personal GitHub token). Additional CLI options mirror the Action options.
+
+## Documentation and contributing
+
+- [Architecture and metric definitions](docs/ARCHITECTURE.md)
+- [Development and testing](docs/DEVELOPMENT.md)
+- [Contributing guidelines](CONTRIBUTING.md)
+- [Original GitHub Profile Summary Cards project](https://github.com/vn7n24fzkq/github-profile-summary-cards), referenced for its GitHub GraphQL aggregation approach; code and SVG rendering here are independently implemented.
+
+Licensed under [MIT](LICENSE).
