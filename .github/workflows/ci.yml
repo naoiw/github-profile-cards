@@ -38,3 +38,9 @@ jobs:
           test -s live-cards/languages-by-commit.svg
           grep -q '<svg ' live-cards/languages-by-repo.svg
           grep -q '<svg ' live-cards/languages-by-commit.svg
+      - name: Upload live preview SVGs
+        uses: actions/upload-artifact@v7
+        with:
+          name: language-cards-live-preview
+          path: live-cards/*.svg
+          retention-days: 7
