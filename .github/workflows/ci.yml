@@ -19,6 +19,7 @@ jobs:
           node-version-file: .nvmrc
       - run: npm run check
       - run: npm test
+      - run: npm run gallery:check
       - run: npm run demo -- --username demo
       - name: Validate SVG artifacts
         run: |
