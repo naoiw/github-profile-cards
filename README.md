@@ -1,8 +1,29 @@
 # GitHub Profile Cards
 
-A configurable, standalone **GitHub profile language card generator** written in TypeScript and run on **Node.js 26**. No web hosting, application deployment, npm dependencies, or build step required.
+**More languages. Less noise.**
 
-Inspired by the GitHub GraphQL acquisition strategy in [github-profile-summary-cards](https://github.com/vn7n24fzkq/github-profile-summary-cards). Aggregation and SVG rendering here are independent.
+Create GitHub profile cards that highlight the **long tail of programming languages** instead of Stars, streaks, or contribution-growth graphs. Pick your Top N, theme, and chart layout. Generate standalone SVGs with GitHub Actions—**no server or deployment required**.
+
+Built with TypeScript on **Node.js 26**. Inspired by the GitHub GraphQL approach of [github-profile-summary-cards](https://github.com/vn7n24fzkq/github-profile-summary-cards), with an independently implemented renderer.
+
+## Gallery
+
+These are **real output examples** generated from `naoiw`'s public GitHub data with the default settings (Top 12, dark theme, donut chart). The SVGs are committed to this repository, so they stay visible without downloading a CI artifact.
+
+### Top Languages by Repo
+
+Each repository counts once, using its primary language.
+
+![Top Languages by Repo — sample SVG](docs/previews/languages-by-repo.svg)
+
+### Top Languages by Commit
+
+GitHub commit contributions are grouped by the repository's primary language, **not** by languages of individual changed files.
+
+![Top Languages by Commit — sample SVG](docs/previews/languages-by-commit.svg)
+
+<sub>Sample snapshot: 2026-11-21. These gallery images are static examples, not automatically refreshed metrics. See [the CI preview artifact](#preview-from-ci) for newly generated samples.</sub>
+
 
 ## Features
 
