@@ -130,3 +130,26 @@ test("large donut totals use smaller center text to remain legible",()=>{
   const svg=renderSvg("Top Languages by Commit",one,{...opts,topN:12},"donut","dark");
   assert.match(svg,/font-size="16"[^>]*>1,234,567,890,123<\/text>/);
 });
+
+test("SVG layout remains valid for 1, 7, 12 and 30 languages in every theme and chart",()=>{
+  for(const size of [1,7,12,30]) {
+    const stats=Array.from({length:size},(_,i)=>({
+      name:"Language"+i,color:"#3178c6",count:size-i,ratio:(size-i)/(size*(size+1)/2)
+    }));
+    for(const chart of ["donut","bars"] as const) {
+      for(const theme of ["dark","light"] as const) {
+        const svg=renderSvg("Top Languages by Repo",stats,{...opts,topN:30},chart,theme);
+        const match=svg.match(/^<svg[^>]*height="(\d+)"/);
+        assert.ok(match,chart+" "+theme+" "+size);
+        const height=Number(match[1]);
+        assert.ok(height>=120+(size-1)*31+18);
+        assert.match(svg,/clipPath id="language-label-region"/);
+        assert.match(svg,/Language0/);
+        assert.match(svg,new RegExp("Language"+(size-1)));
+        assert.doesNotMatch(svg,/(?:NaN|Infinity)/);
+        assert.equal((svg.match(/<svg /g)??[]).length,1);
+        assert.match(svg,/<\/svg>\s*$/);
+      }
+    }
+  }
+});
