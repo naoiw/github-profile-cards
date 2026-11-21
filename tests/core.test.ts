@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {byRepo,byCommit,topN,renderSvg} from "../src/core.ts";
+import {byRepo,byCommit,topN,renderSvg,cardSubtitle} from "../src/core.ts";
 import type {Options,RepoEntry} from "../src/core.ts";
 
 const opts:Options={topN:2,showOthers:true,includeArchived:false,excludeRepos:["owner/ignored"],excludeLanguages:[]};
@@ -30,4 +30,24 @@ test("both SVG renderers escape strings and show language labels",()=>{
   assert.match(donut,/&lt;script&gt;/);
   assert.doesNotMatch(donut,/<script>/);
   assert.match(donut,/A&amp;B/);
+});
+
+test("subtitle distinguishes available languages from the Top N cap",()=>{
+  const names=["C","TypeScript","Rust","Python","Nim"];
+  const all=byRepo(names.map((name,i)=>repo("o/"+i,name)),opts);
+  assert.equal(cardSubtitle(all,{...opts,topN:12}),"5 languages");
+  assert.equal(cardSubtitle(all,{...opts,topN:2}),"Top 2 of 5 languages + Others");
+  assert.equal(cardSubtitle(all,{...opts,topN:2,showOthers:false}),"Top 2 of 5 languages");
+  assert.equal(cardSubtitle([],opts),"0 languages");
+  assert.equal(cardSubtitle(all.slice(0,1),opts),"1 language");
+});
+test("donut center contains a real total with explicit units",()=>{
+  const all=byRepo([repo("o/a","C"),repo("o/b","TypeScript")],opts);
+  const svg=renderSvg("Top Languages by Repo",all,{...opts,topN:12},"donut","dark");
+  assert.match(svg,/>2<\/text>/);
+  assert.match(svg,/>repos<\/text>/);
+  assert.doesNotMatch(svg,/entries/);
+  assert.doesNotMatch(svg,/Top 12/);
+  const commitSvg=renderSvg("Top Languages by Commit",all,opts,"donut","dark");
+  assert.match(commitSvg,/>commits<\/text>/);
 });
