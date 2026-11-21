@@ -77,7 +77,27 @@ export function cardSubtitle(all: LanguageStat[], opts: Options): string {
 function xml(s:string):string {
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
 }
-function shorten(s:string):string { return s.length>24 ? s.slice(0,23)+"…" : s; }
+export function shorten(s:string,maxWidth:number):string {
+  const chars=Array.from(s);
+  const glyphWidth=(char:string):number=>{
+    const code=char.codePointAt(0)??0;
+    if(code>=0x2e80) return 14;
+    if(/[MW@]/.test(char)) return 12;
+    if(/[ilI1.,:;' ]/.test(char)) return 5;
+    return 8;
+  };
+  const total=chars.reduce((sum,char)=>sum+glyphWidth(char),0);
+  if(total<=maxWidth) return s;
+  let width=0;
+  const result:string[]=[];
+  for(const char of chars) {
+    const advance=glyphWidth(char);
+    if(width+advance+14>maxWidth) break;
+    result.push(char);
+    width+=advance;
+  }
+  return result.join("")+"…";
+}
 export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:GraphStyle, theme:CardTheme):string {
   const items=topN(all,opts);
   const isCommit=title.toLowerCase().includes("commit");
@@ -89,6 +109,8 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
   const w=780;
   const total=all.reduce((sum,entry)=>sum+entry.count,0);
   const fmt=(n:number)=>n.toLocaleString("en-US");
+  const centerSize=fmt(total).length>11?16:fmt(total).length>8?19:22;
+  const languageMaxWidth=chart==="donut"?289:198;
   const p:string[]=[
     '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+xml(title)+'">',
     '<title>'+xml(title)+'</title>',
@@ -109,6 +131,9 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
   p.push('<text x="24" y="90" font-size="11" font-family="system-ui, sans-serif" font-weight="600" fill="'+palette.faint+'">LANGUAGE</text>');
   p.push('<text x="'+tableColumns.count+'" y="90" text-anchor="end" font-size="11" font-family="system-ui, sans-serif" font-weight="600" fill="'+palette.faint+'">'+(isCommit?"COMMITS":"REPOS")+'</text>');
   p.push('<text x="'+tableColumns.percent+'" y="90" text-anchor="end" font-size="11" font-family="system-ui, sans-serif" font-weight="600" fill="'+palette.faint+'">SHARE</text>');
+  // Keep long language names away from the numeric columns and bars, even
+  // when an unusually wide glyph exceeds the estimated label width.
+  p.push('<defs><clipPath id="language-label-region"><rect x="24" y="102" width="'+(chart==="donut"?326:201)+'" height="'+(h-112)+'"/></clipPath></defs>');
   if(chart==="donut") {
     const cx=621,cy=Math.round(h/2)+3,r=94,circumference=2*Math.PI*r;
     p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+palette.rail+'" stroke-width="40"/>');
@@ -118,12 +143,12 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
       p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+(normalizeLanguageColor(item.color)??UNKNOWN_LANGUAGE_COLOR)+'" stroke-width="40" stroke-dasharray="'+length.toFixed(3)+' '+(circumference-length).toFixed(3)+'" stroke-dashoffset="'+(-start).toFixed(3)+'" transform="rotate(-90 '+cx+' '+cy+')"/>');
       start+=length;
     }
-    p.push('<text x="'+cx+'" y="'+(cy+1)+'" text-anchor="middle" font-size="22" font-family="system-ui, sans-serif" font-weight="650" fill="'+palette.fg+'">'+fmt(total)+'</text>');
+    p.push('<text x="'+cx+'" y="'+(cy+1)+'" text-anchor="middle" font-size="'+centerSize+'" font-family="system-ui, sans-serif" font-weight="650" fill="'+palette.fg+'">'+fmt(total)+'</text>');
     p.push('<text x="'+cx+'" y="'+(cy+23)+'" text-anchor="middle" font-size="12" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+metric+'</text>');
     items.forEach((item,i)=>{
       const y=120+i*31;
       p.push('<rect x="24" y="'+(y-13)+'" width="12" height="12" rx="2" fill="'+(normalizeLanguageColor(item.color)??UNKNOWN_LANGUAGE_COLOR)+'"/>');
-      p.push('<text x="45" y="'+y+'" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name))+'</text>');
+      p.push('<text x="45" y="'+y+'" clip-path="url(#language-label-region)" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name,languageMaxWidth))+'</text>');
       p.push('<text x="'+tableColumns.count+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'">'+fmt(item.count)+'</text>');
       p.push('<text x="'+tableColumns.percent+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+percentLabel(item.ratio)+'</text>');
     });
@@ -132,7 +157,7 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
     items.forEach((item,i)=>{
       const y=120+i*31;
       const width=Math.max(2,335*item.count/max);
-      p.push('<text x="24" y="'+y+'" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name))+'</text>');
+      p.push('<text x="24" y="'+y+'" clip-path="url(#language-label-region)" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name,languageMaxWidth))+'</text>');
       p.push('<rect x="245" y="'+(y-13)+'" width="335" height="17" rx="3" fill="'+palette.rail+'"/>');
       p.push('<rect x="245" y="'+(y-13)+'" width="'+width.toFixed(2)+'" height="17" rx="3" fill="'+(normalizeLanguageColor(item.color)??UNKNOWN_LANGUAGE_COLOR)+'"/>');
       p.push('<text x="'+tableColumns.count+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'">'+fmt(item.count)+'</text>');
