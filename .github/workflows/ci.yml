@@ -26,3 +26,15 @@ jobs:
           test -s cards/languages-by-commit.svg
           grep -q '<svg ' cards/languages-by-repo.svg
           grep -q '<svg ' cards/languages-by-commit.svg
+      - name: Test composite Action with live public GitHub data
+        uses: ./
+        with:
+          username: naoiw
+          top-n: '12'
+          output-dir: live-cards
+      - name: Validate live SVG artifacts
+        run: |
+          test -s live-cards/languages-by-repo.svg
+          test -s live-cards/languages-by-commit.svg
+          grep -q '<svg ' live-cards/languages-by-repo.svg
+          grep -q '<svg ' live-cards/languages-by-commit.svg
