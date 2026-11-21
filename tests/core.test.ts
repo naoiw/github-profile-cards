@@ -51,3 +51,27 @@ test("donut center contains a real total with explicit units",()=>{
   const commitSvg=renderSvg("Top Languages by Commit",all,opts,"donut","dark");
   assert.match(commitSvg,/>commits<\/text>/);
 });
+
+test("both charts render aligned numeric headings and readable large values",()=>{
+  const counts=[{...repo("o/a","TypeScript"),contributions:1234567},{...repo("o/b","Rust"),contributions:35}];
+  const all=byCommit(counts,{...opts,topN:12});
+  for (const style of ["donut","bars"] as const) {
+    for (const theme of ["dark","light"] as const) {
+      const svg=renderSvg("Top Languages by Commit",all,{...opts,topN:12},style,theme);
+      assert.match(svg,/>COMMITS<\/text>/);
+      assert.match(svg,/>SHARE<\/text>/);
+      assert.match(svg,/1,234,567/);
+      assert.match(svg,/99\.9%/);
+      assert.doesNotMatch(svg,/entries/);
+    }
+  }
+});
+test("30 language layout keeps all rows within SVG height",()=>{
+  const rows=Array.from({length:30},(_,i)=>repo("o/r"+i,"Language"+i));
+  const all=byRepo(rows,{...opts,topN:30});
+  const svg=renderSvg("Top Languages by Repo",all,{...opts,topN:30},"bars","light");
+  const height=Number(svg.match(/height="(\d+)"/)?.[1]);
+  assert.ok(height>=1000);
+  assert.match(svg,/Language29/);
+  assert.match(svg,/0\.?0?%|3\.3%/);
+});
