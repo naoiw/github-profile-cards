@@ -23,7 +23,7 @@ function normalize(rows:[string,string,number][]):LanguageStat[] {
 async function main():Promise<void> {
   const check=process.argv.includes("--check");
   for(const theme of ["dark","light"] as CardTheme[]) {
-    const dir=join("docs","previews",theme);
+    const dir=join("profile-card-output",theme);
     if(!check) await mkdir(dir,{recursive:true});
     for(const [title,file,rows] of [
       ["Top Languages by Repo","languages-by-repo.svg",repoCounts],
