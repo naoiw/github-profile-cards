@@ -13,7 +13,8 @@
     "check": "node --check src/github.ts && node --check src/core.ts && node --check src/cli.ts",
     "gallery": "node scripts/gallery.ts",
     "gallery:check": "node scripts/gallery.ts --check",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify": "node scripts/verify-repo.ts"
   },
   "devDependencies": {
     "@types/node": "26.6.6",
