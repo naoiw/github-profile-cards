@@ -17,7 +17,9 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
+      - run: npm install --no-audit --no-fund --package-lock=false
       - run: npm run check
+      - run: npm run typecheck
       - run: npm test
       - run: npm run gallery:check
       - run: npm run demo -- --username demo --theme all
@@ -37,6 +39,10 @@ jobs:
           top-n: '12'
           theme: all
           output-dir: live-cards
+      - name: Cross-check language counts against GitHub REST
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run verify -- --username naoiw
       - name: Validate all live SVGs
         run: |
           for theme in dark light; do

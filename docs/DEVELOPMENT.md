@@ -11,8 +11,12 @@ The project uses Node's native TypeScript type stripping, with no dependency ins
 ## Local commands
 
 ```bash
+npm install --no-audit --no-fund
 npm run check
+npm run typecheck
 npm test
+# Optional live REST-vs-GraphQL cross-check (requires GITHUB_TOKEN):
+npm run verify -- --username YOUR_USERNAME
 npm run demo -- --username demo
 npm run gallery:check
 ```
@@ -36,13 +40,13 @@ npm run gallery
 npm run gallery:check
 ```
 
-Commit all four regenerated SVGs under `profile-card-output/dark/` and `profile-card-output/light/` when the renderer changes. CI verifies that the committed files match the current renderer. The root README displays both themes directly.
+Commit all four regenerated SVGs under `profile-card-output/dark/` and `profile-card-output/light/` when the renderer changes. CI verifies that the committed files match the current renderer. The root README displays both themes directly. Test cases also cover 1, 7, 12 and 30 languages, long labels, both themes and chart layouts.
 
 ## CI
 
-On pull requests and pushes to `main`, CI runs syntax checks, unit tests, deterministic gallery checks, demo SVG generation, and a **live public GraphQL** smoke test of the composite Action. The live SVGs are generated with `theme: all` and uploaded as temporary workflow artifacts for review. A successful CI run does **not** update the user's profile repository.
+On pull requests and pushes to `main`, CI runs syntax checks, unit tests, deterministic gallery checks, demo SVG generation, and a **live public GraphQL** smoke test of the composite Action. The live SVGs are generated with `theme: all` and uploaded as temporary workflow artifacts for review. A separate verification step compares public non-fork primary-language counts against independently paginated GitHub REST repository data. GitHub's commit-contribution metric is validated using year-boundary, duplicate-year and 100-repository-window fixtures, not claimed to match raw REST commit counts. A successful CI run does **not** update the user's profile repository.
 
-Note: `npm run check` checks syntax, not static types. This MVP currently has no separate `tsc --noEmit` stage. Tests cannot guarantee that GitHub's API will always be reachable in every environment.
+`npm run check` validates Node.js syntax; `npm run typecheck` runs strict TypeScript 7 static checking with Node.js 26 definitions. The `tsconfig.json` is for static analysis; Node.js executes .ts directly using native type stripping. Tests cannot guarantee that GitHub's API will always be reachable.
 
 ## Branches and pull requests
 

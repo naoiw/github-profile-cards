@@ -21,7 +21,7 @@ async function main():Promise<void> {
   const topN=Number(option("top-n","12"));
   if(!Number.isInteger(topN)||topN<1||topN>30) throw new Error("top-n must be 1 through 30");
   const chart=option("chart","donut") as GraphStyle;
-  const theme=option("theme","all");
+  const theme=option("theme","all") as CardTheme|"all";
   if(chart!=="donut"&&chart!=="bars") throw new Error("Invalid chart; choose donut or bars");
   if(theme!=="all"&&theme!=="dark"&&theme!=="light") throw new Error("Invalid theme; choose all, dark or light");
   const out=option("output-dir","profile-card-output");

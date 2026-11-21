@@ -57,6 +57,16 @@ GitHub's own language detection is based on [Linguist](https://github.com/github
 
 Selecting `dark` or `light` produces only that theme's two files, always under its own theme subdirectory. The `chart` option (`donut` / `bars`) selects the chart layout independently.
 
+### Verification and limitations
+
+`npm run verify -- --username LOGIN` independently fetches a user’s public non-fork repositories through the REST API, compares each repository’s primary language with the GraphQL response, and checks the aggregate **By Repo** counts. The CI verification currently targets the public `naoiw` account. This catches omissions and mismatches without relying on the SVG renderer itself.
+
+**By Commit cannot be compared to a raw `GET /commits` count.** GitHub defines contribution eligibility, user attribution, visibility and time windows independently of a repository commit listing. We instead test GraphQL pagination, year boundaries and repository-cap window splitting with controlled fixtures. This does not prove that every GitHub internal contribution rule is visible through the API.
+
+### SVG layout safeguards
+
+SVG legends use a display-width-aware ellipsis plus clip boundaries to keep long language names out of adjacent numeric and bar columns. Full language labels remain in SVG `<title>` elements. Large donut totals receive a reduced font size to avoid collisions. Renderer tests cover both chart styles and light/dark palettes.
+
 The caller workflow decides whether/where to commit these files. This repository never directly modifies a user's profile.
 
 The top-level README displays both style galleries from `profile-card-output/{dark,light}/`. They are frozen public-data snapshots generated for **all** themes by `scripts/gallery.ts` and checked in CI with `npm run gallery:check`. Local synthetic demos are kept in ignored `demo-output/` so they do not overwrite the gallery.

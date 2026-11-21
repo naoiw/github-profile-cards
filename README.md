@@ -99,10 +99,12 @@ The caller's `github.token` is attempted for public data. If insufficient, pass 
 
 ## Local development
 
-Requires **Node.js 26**. No dependency installation or compilation is necessary.
+Requires **Node.js 26**. Install development dependencies for the strict type checker; no application build or runtime dependencies are needed.
 
 ```bash
+npm install --no-audit --no-fund
 npm run check
+npm run typecheck
 npm test
 npm run demo -- --username demo
 npm run gallery:check
@@ -114,11 +116,11 @@ The demo uses synthetic values, writes all four SVGs under `demo-output/` (both 
 npm run generate -- --username YOUR_USERNAME --top-n 12
 ```
 
-To regenerate the repository's fixed samples, run `npm run gallery`. Sample generation always covers both themes and the committed files are validated in CI.
+To regenerate the repository's fixed samples, run `npm run gallery`. Sample generation always covers both themes and the committed files are validated in CI. For an independent public-repository language cross-check, run `npm run verify -- --username YOUR_USERNAME` with `GITHUB_TOKEN` set.
 
 ## Documentation and contributions
 
-- [Architecture and metric definitions](docs/ARCHITECTURE.md)
+- [Architecture and metric definitions, accuracy limits and verification](docs/ARCHITECTURE.md)
 - [Development and testing](docs/DEVELOPMENT.md)
 - [Contributing guide](CONTRIBUTING.md)
 - [Original GitHub Profile Summary Cards project](https://github.com/vn7n24fzkq/github-profile-summary-cards), referenced for its data-acquisition approach; code and rendering are independently implemented here.

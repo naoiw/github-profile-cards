@@ -12,12 +12,14 @@ Thanks for considering a contribution! Bug reports, test cases, documentation im
 
 - **Node.js 26** is required (see `.nvmrc` and `package.json`).
 - The project is TypeScript, executed with Node's native type stripping.
-- There are no runtime npm dependencies and no app deployment.
+- There are no runtime npm dependencies and no app deployment. Install development dependencies for static checking.
 
 Run these commands before opening a PR:
 
 ```bash
+npm install --no-audit --no-fund
 npm run check
+npm run typecheck
 npm test
 npm run demo -- --username demo
 npm run gallery:check
@@ -41,7 +43,7 @@ Never commit tokens, raw private data, `.env` files, or sensitive account detail
 - **By Commit** means grouping GitHub commit contributions by the repository's primary language, **not** by changed-file languages.
 - Never silently drop rare languages, private-data visibility constraints, or missing GraphQL pages.
 - Preserve CLI and Action inputs and output paths unless a breaking change is explicitly discussed.
-- Add or update unit tests for aggregation and rendering changes.
+- Add or update unit tests for aggregation and rendering changes. For changes to GraphQL repository collection, also run `npm run verify -- --username YOUR_USERNAME` with a read token and report whether the REST-based cross-check passed.
 - If you change the sample card layout, run `npm run gallery` and commit the generated SVGs in `profile-card-output/{dark,light}/`. CI verifies that the snapshots are current.
 - When embedding generated SVG cards in any README or Markdown documentation, make each card clickable and link it to `https://github.com/naoiw/github-profile-cards`. Use `[![Alt](path/to/card.svg)](https://github.com/naoiw/github-profile-cards)` for Markdown images, or wrap a `<picture>` element with `<a href="https://github.com/naoiw/github-profile-cards">` for theme-aware examples. This attribution belongs in the Markdown embedding, not inside the SVG artwork.
 - Document any behavior change in README or `docs/`; avoid speculative feature descriptions.

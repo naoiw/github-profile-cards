@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {byRepo,byCommit,topN,renderSvg,cardSubtitle,percentLabel,normalizeLanguageColor,UNKNOWN_LANGUAGE_COLOR} from "../src/core.ts";
+import {byRepo,byCommit,topN,renderSvg,cardSubtitle,percentLabel,normalizeLanguageColor,UNKNOWN_LANGUAGE_COLOR,shorten} from "../src/core.ts";
 import type {Options,RepoEntry} from "../src/core.ts";
 
 const opts:Options={topN:2,showOthers:true,includeArchived:false,excludeRepos:["owner/ignored"],excludeLanguages:[]};
@@ -107,5 +107,49 @@ test("SVG rendering rejects unsafe colors from direct renderer input",()=>{
     assert.doesNotMatch(svg,/javascript:/);
     assert.match(svg,/&lt;untrusted&gt;/);
     assert.match(svg,/#87929c/);
+  }
+});
+
+test("long language names have bounded labels and retain original SVG titles",()=>{
+  const label="A very long language name with 漢字 and extra characters";
+  assert.equal(shorten("Rust",198),"Rust");
+  assert.ok(shorten(label,198).endsWith("…"));
+  const stats=[{name:label,color:"#aabbcc",count:35,ratio:1}];
+  for(const chart of ["donut","bars"] as const) {
+    for(const theme of ["dark","light"] as const) {
+      const svg=renderSvg("Top Languages by Repo",stats,{...opts,topN:12},chart,theme);
+      assert.match(svg,/clipPath id="language-label-region"/);
+      assert.match(svg,/clip-path="url\(#language-label-region\)"/);
+      assert.match(svg,/A very long language name with 漢字 and extra characters<\/title>/);
+      assert.match(svg,/…/);
+    }
+  }
+});
+test("large donut totals use smaller center text to remain legible",()=>{
+  const one=[{name:"TypeScript",color:"#3178c6",count:1234567890123,ratio:1}];
+  const svg=renderSvg("Top Languages by Commit",one,{...opts,topN:12},"donut","dark");
+  assert.match(svg,/font-size="16"[^>]*>1,234,567,890,123<\/text>/);
+});
+
+test("SVG layout remains valid for 1, 7, 12 and 30 languages in every theme and chart",()=>{
+  for(const size of [1,7,12,30]) {
+    const stats=Array.from({length:size},(_,i)=>({
+      name:"Language"+i,color:"#3178c6",count:size-i,ratio:(size-i)/(size*(size+1)/2)
+    }));
+    for(const chart of ["donut","bars"] as const) {
+      for(const theme of ["dark","light"] as const) {
+        const svg=renderSvg("Top Languages by Repo",stats,{...opts,topN:30},chart,theme);
+        const match=svg.match(/^<svg[^>]*height="(\d+)"/);
+        assert.ok(match,chart+" "+theme+" "+size);
+        const height=Number(match[1]);
+        assert.ok(height>=120+(size-1)*31+18);
+        assert.match(svg,/clipPath id="language-label-region"/);
+        assert.match(svg,/Language0/);
+        assert.match(svg,new RegExp("Language"+(size-1)));
+        assert.doesNotMatch(svg,/(?:NaN|Infinity)/);
+        assert.equal((svg.match(/<svg /g)??[]).length,1);
+        assert.match(svg,/<\/svg>\s*$/);
+      }
+    }
   }
 });
