@@ -52,6 +52,12 @@ export function topN(all: LanguageStat[], opts: Options): LanguageStat[] {
   return opts.showOthers && count ? [...shown,{name:"Others",color:"#778899",count,ratio}] : shown;
 }
 
+export function percentLabel(ratio: number): string {
+  const percent=ratio*100;
+  if(ratio>0 && percent<0.05) return "<0.1%";
+  if(ratio<1 && percent>99.95) return ">99.9%";
+  return percent.toFixed(1)+"%";
+}
 export function cardSubtitle(all: LanguageStat[], opts: Options): string {
   if (all.length <= opts.topN) return all.length + (all.length === 1 ? " language" : " languages");
   return "Top " + opts.topN + " of " + all.length + " languages" + (opts.showOthers ? " + Others" : "");
@@ -107,7 +113,7 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
       p.push('<rect x="24" y="'+(y-13)+'" width="12" height="12" rx="2" fill="'+item.color+'"/>');
       p.push('<text x="45" y="'+y+'" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'"><title>'+xml(item.name)+'</title>'+xml(shorten(item.name))+'</text>');
       p.push('<text x="'+tableColumns.count+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'">'+fmt(item.count)+'</text>');
-      p.push('<text x="'+tableColumns.percent+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+(item.ratio*100).toFixed(1)+'%</text>');
+      p.push('<text x="'+tableColumns.percent+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+percentLabel(item.ratio)+'</text>');
     });
   } else {
     const max=Math.max(...items.map(entry=>entry.count),1);
@@ -118,7 +124,7 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
       p.push('<rect x="245" y="'+(y-13)+'" width="335" height="17" rx="3" fill="'+palette.rail+'"/>');
       p.push('<rect x="245" y="'+(y-13)+'" width="'+width.toFixed(2)+'" height="17" rx="3" fill="'+item.color+'"/>');
       p.push('<text x="'+tableColumns.count+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.fg+'">'+fmt(item.count)+'</text>');
-      p.push('<text x="'+tableColumns.percent+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+(item.ratio*100).toFixed(1)+'%</text>');
+      p.push('<text x="'+tableColumns.percent+'" y="'+y+'" text-anchor="end" font-size="14" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+percentLabel(item.ratio)+'</text>');
     });
   }
   p.push("</svg>");
