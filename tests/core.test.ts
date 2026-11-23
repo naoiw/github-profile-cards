@@ -171,7 +171,7 @@ test("donut uses explicit arcs for tiny slices in both themes",()=>{
     assert.notEqual(arcs[2][1]+" "+arcs[2][2],arcs[2][4]+" "+arcs[2][5]);
     for(const arc of arcs) {
       for(const [x,y] of [[Number(arc[1]),Number(arc[2])],[Number(arc[4]),Number(arc[5])]]) {
-        assert.ok(x>=527&&x<=715&&y>=72&&y<=265);
+        assert.ok(x>=527&&x<=715&&y>=64&&y<=252);
       }
     }
   }
