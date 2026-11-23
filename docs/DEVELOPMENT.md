@@ -21,7 +21,7 @@ npm run demo -- --username demo
 npm run gallery:check
 ```
 
-`npm run demo` produces all four SVGs under the ignored `demo-output/{dark,light}/` paths from synthetic data and needs no token. It will not overwrite the committed gallery. It is not a real-account benchmark.
+`npm run demo` produces all four SVGs under the ignored `demo-output/{dark,light}/` paths and a scrollable `demo-output/README.md` from synthetic data and needs no token. It will not overwrite the committed gallery. It is not a real-account benchmark.
 
 To generate real data, set `GITHUB_TOKEN` as an environment variable and run:
 
@@ -40,11 +40,11 @@ npm run gallery
 npm run gallery:check
 ```
 
-Commit all four regenerated SVGs under `profile-card-output/dark/` and `profile-card-output/light/` when the renderer changes. CI verifies that the committed files match the current renderer. The root README displays both themes directly. Test cases also cover 1, 7, 12 and 30 languages, long labels, both themes and chart layouts.
+Commit all four regenerated SVGs under `profile-card-output/dark/` and `profile-card-output/light/`, plus `profile-card-output/README.md`, when the renderer or gallery changes. CI verifies the committed files. Browsing the output folder on GitHub automatically displays the gallery README and its inline SVG previews. Only the most recent run's generated files are listed, even when old SVGs remain on disk. The root README displays both themes directly. Test cases also cover 1, 7, 12 and 30 languages, long labels, both themes and chart layouts.
 
 ## CI
 
-On pull requests and pushes to `main`, CI runs syntax checks, unit tests, deterministic gallery checks, demo SVG generation, and a **live public GraphQL** smoke test of the composite Action. The live SVGs are generated with `theme: all` and uploaded as temporary workflow artifacts for review. A separate verification step compares public non-fork primary-language counts against independently paginated GitHub REST repository data. GitHub's commit-contribution metric is validated using year-boundary, duplicate-year and 100-repository-window fixtures, not claimed to match raw REST commit counts. A successful CI run does **not** update the user's profile repository.
+On pull requests and pushes to `main`, CI runs syntax checks, unit tests, deterministic gallery checks (including the generated output README), demo SVG generation, and a **live public GraphQL** smoke test of the composite Action. The live SVGs are generated with `theme: all` and uploaded as temporary workflow artifacts for review. A separate verification step compares public non-fork primary-language counts against independently paginated GitHub REST repository data. GitHub's commit-contribution metric is validated using year-boundary, duplicate-year and 100-repository-window fixtures, not claimed to match raw REST commit counts. A successful CI run does **not** update the user's profile repository.
 
 `npm run check` validates Node.js syntax; `npm run typecheck` runs strict TypeScript 7 static checking with Node.js 26 definitions. The `tsconfig.json` is for static analysis; Node.js executes .ts directly using native type stripping. Tests cannot guarantee that GitHub's API will always be reachable.
 

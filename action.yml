@@ -1,5 +1,5 @@
 name: GitHub Profile Cards
-description: Generate Top N Languages by Repo and Commit SVG cards
+description: Generate Top N Languages by Repo and Commit SVG cards plus a browsable gallery README
 author: naoiw
 
 inputs:

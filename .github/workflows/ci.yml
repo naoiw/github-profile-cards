@@ -23,8 +23,11 @@ jobs:
       - run: npm test
       - run: npm run gallery:check
       - run: npm run demo -- --username demo --theme all
-      - name: Validate all demo SVGs
+      - name: Validate all demo SVGs and gallery
         run: |
+          test -s demo-output/README.md
+          grep -q './dark/languages-by-repo.svg' demo-output/README.md
+          grep -q './light/languages-by-commit.svg' demo-output/README.md
           for theme in dark light; do
             for kind in repo commit; do
               svg="demo-output/$theme/languages-by-$kind.svg"
@@ -43,8 +46,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: npm run verify -- --username naoiw
-      - name: Validate all live SVGs
+      - name: Validate all live SVGs and gallery
         run: |
+          test -s live-cards/README.md
+          grep -q './dark/languages-by-repo.svg' live-cards/README.md
+          grep -q './light/languages-by-commit.svg' live-cards/README.md
           for theme in dark light; do
             for kind in repo commit; do
               svg="live-cards/$theme/languages-by-$kind.svg"
@@ -52,9 +58,11 @@ jobs:
               grep -q '<svg ' "$svg"
             done
           done
-      - name: Upload live preview SVGs
+      - name: Upload live preview SVGs and gallery
         uses: actions/upload-artifact@v7
         with:
           name: language-cards-live-preview
-          path: live-cards/**/*.svg
+          path: |
+            live-cards/**/*.svg
+            live-cards/README.md
           retention-days: 7

@@ -24,7 +24,7 @@ jobs:
           output-dir: profile-card-output
           # Optional for private/restricted GraphQL contributions:
           # token: ${{ secrets.PROFILE_CARDS_TOKEN }}
-      - name: Commit generated SVGs
+      - name: Commit generated SVGs and gallery
         shell: bash
         run: |
           git add profile-card-output/
