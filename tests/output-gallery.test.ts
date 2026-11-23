@@ -13,6 +13,8 @@ test("gallery keeps current order, previews and SVG links",()=>{
   assert.match(rendered,/!\[Top Languages by Repo — Dark \(Donut\)\]\(\.\/dark\/languages-by-repo.svg\)/);
   assert.match(rendered,/!\[Top Languages by Commit — Light \(Bars\)\]\(\.\/light\/languages-by-commit.svg\)/);
   assert.match(rendered,/\[Open SVG\]\(\.\/light\/languages-by-commit.svg\)/);
+  assert.match(rendered,/prefix its path with your configured output directory/);
+  assert.match(rendered,/\.\/profile-card-output\/dark\/languages-by-repo.svg/);
   assert.equal(renderOutputGallery([dark,light]),rendered);
 });
 test("gallery rejects missing metadata and invalid or duplicate paths",()=>{

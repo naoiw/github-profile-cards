@@ -40,11 +40,11 @@ npm run gallery
 npm run gallery:check
 ```
 
-Commit all four regenerated SVGs under `profile-card-output/dark/` and `profile-card-output/light/`, plus `profile-card-output/README.md`, when the renderer or gallery changes. CI verifies the committed files. Browsing the output folder on GitHub automatically displays the gallery README and its inline SVG previews. Only the most recent run's generated files are listed, even when old SVGs remain on disk. The root README displays both themes directly. Test cases also cover 1, 7, 12 and 30 languages, long labels, both themes and chart layouts.
+Commit all four regenerated SVGs under `profile-card-output/dark/` and `profile-card-output/light/`, plus `profile-card-output/README.md`, when the renderer or gallery changes. CI verifies the committed files. Browsing the output folder on GitHub displays the gallery README and its inline SVG previews once that README is committed. The paths shown inside this gallery are relative to the output directory; links in a repository-root profile README must include the output directory prefix. Only the most recent run's generated files are listed, even when old SVGs remain on disk. The root README displays both themes directly. Test cases also cover 1, 7, 12 and 30 languages, long labels, both themes and chart layouts.
 
 ## CI
 
-On pull requests and pushes to `main`, CI runs syntax checks, unit tests, deterministic gallery checks (including the generated output README), demo SVG generation, and a **live public GraphQL** smoke test of the composite Action. The live SVGs are generated with `theme: all` and uploaded as temporary workflow artifacts for review. A separate verification step compares public non-fork primary-language counts against independently paginated GitHub REST repository data. GitHub's commit-contribution metric is validated using year-boundary, duplicate-year and 100-repository-window fixtures, not claimed to match raw REST commit counts. A successful CI run does **not** update the user's profile repository.
+On pull requests and pushes to `main`, CI runs syntax checks, unit tests, deterministic gallery checks (including the generated output README), demo SVG generation, and a **live public GraphQL** smoke test of the composite Action. The live SVGs and generated gallery README are produced with `theme: all` and uploaded as temporary workflow artifacts for review. A separate verification step compares public non-fork primary-language counts against independently paginated GitHub REST repository data. GitHub's commit-contribution metric is validated using year-boundary, duplicate-year and 100-repository-window fixtures, not claimed to match raw REST commit counts. A successful CI run does **not** update the user's profile repository.
 
 `npm run check` validates Node.js syntax; `npm run typecheck` runs strict TypeScript 7 static checking with Node.js 26 definitions. The `tsconfig.json` is for static analysis; Node.js executes .ts directly using native type stripping. Tests cannot guarantee that GitHub's API will always be reachable.
 
@@ -56,7 +56,7 @@ In PR descriptions, explain changes to metric semantics and note which checks pa
 
 ## Stable releases
 
-The current stable release is `v1.0.0`, with an accompanying `v1` major-version alias. Consumers may use `naoiw/github-profile-cards@v1.0.0` for a fixed version, `@v1` for compatible v1 updates, or a full commit SHA for exact pinning.
+The current stable release is `v1.0.0`, with an accompanying `v1` major-version alias. **This release predates the output-local README feature** and generates SVGs only. The source branch/PR preview includes it, but existing workflows pinned to `@v1.0.0` will not gain the feature unless updated to a later release. Consumers may use `naoiw/github-profile-cards@v1.0.0` for a fixed version, `@v1` for compatible v1 updates, or a full commit SHA for exact pinning.
 
 The initial release is published by the guarded workflow in `.github/workflows/publish-v1.yml` after it lands on `main`. That workflow runs static checks, unit tests, the public GitHub GraphQL Action smoke test, and the independent REST comparison **before** creating the `v1.0.0` release. It checks existing tags/releases and does not publish a new version on ordinary main pushes.
 

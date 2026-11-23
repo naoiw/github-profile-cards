@@ -11,9 +11,11 @@ GitHub Profile Cards is a **Node.js 26 / TypeScript** CLI packaged as a composit
 | `src/cli.ts` | Command-line arguments, input validation, output files and demo data |
 | `src/output-gallery.ts` | Manifest-based Markdown gallery, generated-file validation and deterministic output |
 | `action.yml` | Reusable composite Action that runs the CLI with Node.js 26 |
-| `examples/profile-workflow.yml` | Caller workflow that commits SVGs into the user's own profile repository |
+| `examples/profile-workflow.yml` | Caller workflow that commits generated output files into the user's own profile repository |
 | `scripts/gallery.ts` | Regenerates the fixed public-data light/dark gallery SVGs |
 | `tests/core.test.ts` | Unit tests for metric definitions, labels, themes and safe markup |
+| `tests/output-gallery.test.ts` | Tests for Markdown paths, grouping, missing SVG files and idempotent writes |
+| `tests/cli.test.ts` | End-to-end CLI generation tests, including theme switching and custom output directories |
 
 ## Data sources and definitions
 
@@ -58,7 +60,7 @@ GitHub's own language detection is based on [Linguist](https://github.com/github
 
 Selecting `dark` or `light` produces only that theme's two files, always under its own theme subdirectory. The `chart` option (`donut` / `bars`) selects the chart layout independently.
 
-The Action and CLI additionally generate `<output-dir>/README.md` as an inline preview gallery. The gallery is built from a manifest of files written in the **current run** rather than scanning output directories; stale files are not listed. Each referenced SVG is checked for existence. Paths are relative to the output README and the chosen chart style is labeled. The README content is deterministic and unchanged content is not rewritten.
+The Action and CLI additionally generate `<output-dir>/README.md` as an inline preview gallery. The gallery is built from a manifest of files written in the **current run** rather than scanning output directories; stale files are not listed. Each referenced SVG is checked for existence. Paths are relative to the output README, not to the consumer repository root: embedding a selected SVG in a root README requires prefixing the configured output directory (for the default output path, `./profile-card-output/dark/languages-by-repo.svg`). The chosen chart style is labeled. The README content is deterministic and unchanged content is not rewritten. The output-gallery feature is not part of the already-published `v1.0.0` tag.
 
 ### Verification and limitations
 

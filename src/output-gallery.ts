@@ -38,7 +38,9 @@ export function renderOutputGallery(entries:readonly GalleryEntry[]):string {
   const lines=[
     "# Generated profile cards",
     "",
-    "Browse the cards from the latest generation and choose a style. Copy a relative SVG path to use it in your profile README.",
+    "Browse the cards from the latest generation and choose a style. Paths below are relative to this output directory.",
+    "",
+    "To embed a card in your repository-root README, prefix its path with your configured output directory (for example, `./profile-card-output/dark/languages-by-repo.svg` when using the default).",
     "",
     "Only cards generated during the latest run are listed. Older SVG files may still remain in this directory.",
     ""

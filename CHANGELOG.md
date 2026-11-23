@@ -2,6 +2,14 @@
 
 All notable changes to GitHub Profile Cards are recorded here.
 
+## [Unreleased]
+
+- Fix browser-specific donut SVG rendering artifacts by replacing dash-offset slices with explicit SVG arcs (#17, #18).
+- Add an automatically generated, output-local `README.md` that previews cards from the current run, with relative SVG links, theme grouping, and chart-style labels (#19, #20).
+- Avoid rewriting unchanged gallery Markdown and omit stale files from the generated preview.
+
+These changes are in source / PRs only until a new release is published; `v1.0.0` remains unchanged.
+
 ## [1.0.0] - 2026-11-21
 
 Initial stable release.
