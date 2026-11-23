@@ -1,5 +1,7 @@
 import {mkdir,writeFile} from "node:fs/promises";
 import {resolve} from "node:path";
+import {writeOutputGallery} from "./output-gallery.ts";
+import type {GalleryEntry} from "./output-gallery.ts";
 import {GitHubClient} from "./github.ts";
 import {byRepo,byCommit,renderSvg} from "./core.ts";
 import type {RepoEntry,CommitEntry,Options,GraphStyle,CardTheme} from "./core.ts";
@@ -45,14 +47,17 @@ async function main():Promise<void> {
     {filename:"languages-by-commit.svg",title:"Top Languages by Commit",stats:byCommit(commits,settings)}
   ];
   const themes:CardTheme[]=theme==="all" ? ["dark","light"] : [theme];
+  const generated:GalleryEntry[]=[];
   for(const selectedTheme of themes) {
     const directory=resolve(out,selectedTheme);
     await mkdir(directory,{recursive:true});
     for(const {filename,title,stats} of cards) {
       await writeFile(resolve(directory,filename),renderSvg(title,stats,settings,chart,selectedTheme),"utf8");
+      generated.push({theme:selectedTheme,title,chart,relativePath:selectedTheme+"/"+filename});
       console.log(selectedTheme+"/"+filename+": "+stats.length+" languages");
     }
   }
+  await writeOutputGallery(out,generated);
   if(flag("demo")) console.log("Demo uses synthetic sample data, not real user data.");
 }
 main().catch(error=>{console.error(error instanceof Error?error.message:error);process.exitCode=1;});

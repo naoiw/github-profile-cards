@@ -1,6 +1,8 @@
 import {mkdir,readFile,writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {renderSvg} from "../src/core.ts";
+import {renderOutputGallery} from "../src/output-gallery.ts";
+import type {GalleryEntry} from "../src/output-gallery.ts";
 import type {LanguageStat,Options,CardTheme} from "../src/core.ts";
 
 // Frozen, public-data example from 2026-11-21. This is intentionally not a live
@@ -22,6 +24,7 @@ function normalize(rows:[string,string,number][]):LanguageStat[] {
 }
 async function main():Promise<void> {
   const check=process.argv.includes("--check");
+  const generated:GalleryEntry[]=[];
   for(const theme of ["dark","light"] as CardTheme[]) {
     const dir=join("profile-card-output",theme);
     if(!check) await mkdir(dir,{recursive:true});
@@ -37,8 +40,18 @@ async function main():Promise<void> {
       } else {
         await writeFile(path,content,"utf8");
       }
+      generated.push({theme,title,chart:"donut",relativePath:theme+"/"+file});
       console.log((check?"Verified ":"Generated ")+path);
     }
   }
+  const readme=join("profile-card-output","README.md");
+  const markdown=renderOutputGallery(generated);
+  if(check) {
+    const existing=await readFile(readme,"utf8");
+    if(existing!==markdown) throw new Error(readme+" is outdated. Run npm run gallery.");
+  } else {
+    await writeFile(readme,markdown,"utf8");
+  }
+  console.log((check?"Verified ":"Generated ")+readme);
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

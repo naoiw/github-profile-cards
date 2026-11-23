@@ -58,3 +58,43 @@ test("unsupported theme fails without generating output",async()=>{
     assert.equal(await exists(output+"/dark"),false);
   });
 });
+
+test("generated README previews only the latest run",async()=>{
+  await withOutput(async output=>{
+    generate(output);
+    const all=await readFile(output+"/README.md","utf8");
+    assert.match(all,/^# Generated profile cards/m);
+    assert.ok(all.indexOf("## Dark")<all.indexOf("## Light"));
+    for(const theme of ["dark","light"]) {
+      for(const name of ["languages-by-repo.svg","languages-by-commit.svg"]) {
+        assert.ok(all.includes("]("+ "./"+theme+"/"+name+")"));
+      }
+    }
+    generate(output,["--theme","light","--chart","bars"]);
+    const light=await readFile(output+"/README.md","utf8");
+    assert.doesNotMatch(light,/## Dark|\.\/dark\//);
+    assert.match(light,/### Top Languages by Repo · Bars/);
+    assert.match(light,/!\[Top Languages by Commit — Light \(Bars\)\]/);
+    assert.equal(await exists(output+"/dark/languages-by-repo.svg"),true);
+  });
+});
+test("custom nested output-dir uses relative links",async()=>{
+  await withOutput(async root=>{
+    const out=root+"/subdir/cards";
+    generate(out,["--theme","dark"]);
+    const markdown=await readFile(out+"/README.md","utf8");
+    assert.match(markdown,/\.\/dark\/languages-by-repo.svg/);
+    assert.doesNotMatch(markdown,/subdir\/cards|\.\/light\//);
+  });
+});
+test("repeat generation retains README content and modification time",async()=>{
+  await withOutput(async out=>{
+    generate(out);
+    const path=out+"/README.md";
+    const content=await readFile(path,"utf8");
+    const lastModified=(await stat(path)).mtimeMs;
+    generate(out);
+    assert.equal(await readFile(path,"utf8"),content);
+    assert.equal((await stat(path)).mtimeMs,lastModified);
+  });
+});
