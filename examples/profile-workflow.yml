@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      # v1.0.0 generates SVGs only. Pin a newer release after the output gallery ships.
-      # Use @v1 to follow future compatible major-version updates.
-      - uses: naoiw/github-profile-cards@v1.0.0
+      # Pin immutable v1.1.0 for SVGs plus the output-gallery README.
+      # Use @v1 to follow future compatible minor and patch updates.
+      - uses: naoiw/github-profile-cards@v1.1.0
         with:
           username: ${{ github.repository_owner }}
           top-n: '12'
