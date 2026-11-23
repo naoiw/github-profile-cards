@@ -153,3 +153,48 @@ test("SVG layout remains valid for 1, 7, 12 and 30 languages in every theme and 
     }
   }
 });
+
+test("donut uses explicit arcs for tiny slices in both themes",()=>{
+  const all=[
+    {name:"TypeScript",color:"#3178c6",count:899999,ratio:899999/1000000},
+    {name:"JavaScript",color:"#f1e05a",count:100000,ratio:100000/1000000},
+    {name:"LiveScript",color:"#499886",count:1,ratio:1/1000000}
+  ];
+  for(const theme of ["dark","light"] as const) {
+    const svg=renderSvg("Top Languages by Commit",all,{...opts,topN:12},"donut",theme);
+    const arcs=[...svg.matchAll(/<path d="M ([0-9.\-]+) ([0-9.\-]+) A 94 94 0 ([01]) 1 ([0-9.\-]+) ([0-9.\-]+)" fill="none" stroke="(#[0-9a-f]{6})" stroke-width="40"\/>/g)];
+    assert.equal(arcs.length,3);
+    assert.doesNotMatch(svg,/stroke-dash(?:array|offset)/);
+    assert.equal(arcs[0][3],"1");
+    assert.equal(arcs[1][3],"0");
+    assert.equal(arcs[2][6],"#499886");
+    assert.notEqual(arcs[2][1]+" "+arcs[2][2],arcs[2][4]+" "+arcs[2][5]);
+    for(const arc of arcs) {
+      for(const [x,y] of [[Number(arc[1]),Number(arc[2])],[Number(arc[4]),Number(arc[5])]]) {
+        assert.ok(x>=527&&x<=715&&y>=72&&y<=265);
+      }
+    }
+  }
+});
+test("100% donut keeps a complete ring without a dash or degenerate arc",()=>{
+  const data=[{name:"TypeScript",color:"#3178c6",count:20,ratio:1}];
+  for(const theme of ["dark","light"] as const) {
+    const svg=renderSvg("Top Languages by Repo",data,{...opts,topN:12},"donut",theme);
+    assert.match(svg,/<circle cx="621" cy="158" r="94" fill="none" stroke="#3178c6" stroke-width="40"\/>/);
+    assert.doesNotMatch(svg,/<path /);
+    assert.doesNotMatch(svg,/stroke-dash(?:array|offset)/);
+  }
+});
+test("hidden Others preserves proportional donut rail and bars mode",()=>{
+  const all=[
+    {name:"C",color:"#555555",count:3,ratio:0.75},
+    {name:"Rust",color:"#dea584",count:1,ratio:0.25}
+  ];
+  const onlyOne={...opts,topN:1,showOthers:false};
+  const svg=renderSvg("Top Languages by Repo",all,onlyOne,"donut","dark");
+  assert.equal((svg.match(/<path /g)??[]).length,1);
+  assert.match(svg,/A 94 94 0 1 1 /);
+  const bars=renderSvg("Top Languages by Repo",all,onlyOne,"bars","dark");
+  assert.match(bars,/<rect x="245"/);
+  assert.doesNotMatch(bars,/<path /);
+});

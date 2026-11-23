@@ -8,13 +8,13 @@
 <text x="466" y="90" text-anchor="end" font-size="11" font-family="system-ui, sans-serif" font-weight="600" fill="#a6b3c1">SHARE</text>
 <defs><clipPath id="language-label-region"><rect x="24" y="102" width="326" height="217"/></clipPath></defs>
 <circle cx="621" cy="168" r="94" fill="none" stroke="#30363d" stroke-width="40"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#3178c6" stroke-width="40" stroke-dasharray="431.051 159.568" stroke-dashoffset="0.000" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#f1e05a" stroke-width="40" stroke-dasharray="110.470 480.149" stroke-dashoffset="-431.051" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#244776" stroke-width="40" stroke-dasharray="18.051 572.569" stroke-dashoffset="-541.521" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#663399" stroke-width="40" stroke-dasharray="10.830 579.789" stroke-dashoffset="-559.572" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#ffc200" stroke-width="40" stroke-dasharray="7.942 582.677" stroke-dashoffset="-570.403" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#dea584" stroke-width="40" stroke-dasharray="7.220 583.399" stroke-dashoffset="-578.345" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#499886" stroke-width="40" stroke-dasharray="5.054 585.565" stroke-dashoffset="-585.565" transform="rotate(-90 621 168)"/>
+<path d="M 621.000000 74.000000 A 94 94 0 1 1 527.753941 179.881604" fill="none" stroke="#3178c6" stroke-width="40"/>
+<path d="M 527.753941 179.881604 A 94 94 0 0 1 574.104254 86.533510" fill="none" stroke="#f1e05a" stroke-width="40"/>
+<path d="M 574.104254 86.533510 A 94 94 0 0 1 590.514195 79.080847" fill="none" stroke="#244776" stroke-width="40"/>
+<path d="M 590.514195 79.080847 A 94 94 0 0 1 600.938697 76.165670" fill="none" stroke="#663399" stroke-width="40"/>
+<path d="M 600.938697 76.165670 A 94 94 0 0 1 608.760366 74.800261" fill="none" stroke="#ffc200" stroke-width="40"/>
+<path d="M 608.760366 74.800261 A 94 94 0 0 1 615.948235 74.135845" fill="none" stroke="#dea584" stroke-width="40"/>
+<path d="M 615.948235 74.135845 A 94 94 0 0 1 621.000000 74.000000" fill="none" stroke="#499886" stroke-width="40"/>
 <text x="621" y="169" text-anchor="middle" font-size="22" font-family="system-ui, sans-serif" font-weight="650" fill="#e6edf3">818</text>
 <text x="621" y="191" text-anchor="middle" font-size="12" font-family="system-ui, sans-serif" fill="#a6b3c1">commits</text>
 <rect x="24" y="107" width="12" height="12" rx="2" fill="#3178c6"/>

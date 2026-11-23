@@ -135,13 +135,27 @@ export function renderSvg(title:string, all:LanguageStat[], opts:Options, chart:
   // when an unusually wide glyph exceeds the estimated label width.
   p.push('<defs><clipPath id="language-label-region"><rect x="24" y="102" width="'+(chart==="donut"?326:201)+'" height="'+(h-112)+'"/></clipPath></defs>');
   if(chart==="donut") {
-    const cx=621,cy=Math.round(h/2)+3,r=94,circumference=2*Math.PI*r;
+    const cx=621,cy=Math.round(h/2)+3,r=94;
     p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+palette.rail+'" stroke-width="40"/>');
+    // Draw independent, explicit SVG arcs: full-circle dash offsets can render
+    // stray fragments in some browsers, particularly for tiny final slices.
+    const point=(turn:number):string=>{
+      const angle=(turn-0.25)*2*Math.PI;
+      return (cx+r*Math.cos(angle)).toFixed(6)+" "+(cy+r*Math.sin(angle)).toFixed(6);
+    };
     let start=0;
     for(const item of items) {
-      const length=item.ratio*circumference;
-      p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+(normalizeLanguageColor(item.color)??UNKNOWN_LANGUAGE_COLOR)+'" stroke-width="40" stroke-dasharray="'+length.toFixed(3)+' '+(circumference-length).toFixed(3)+'" stroke-dashoffset="'+(-start).toFixed(3)+'" transform="rotate(-90 '+cx+' '+cy+')"/>');
-      start+=length;
+      const ratio=Math.max(0,Math.min(1,item.ratio));
+      if(ratio<=0) continue;
+      const color=normalizeLanguageColor(item.color)??UNKNOWN_LANGUAGE_COLOR;
+      if(ratio>=1) {
+        // A single SVG A command cannot describe an entire circle.
+        p.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="40"/>');
+      } else {
+        const d="M "+point(start)+" A "+r+" "+r+" 0 "+(ratio>0.5?1:0)+" 1 "+point(start+ratio);
+        p.push('<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="40"/>');
+      }
+      start+=ratio;
     }
     p.push('<text x="'+cx+'" y="'+(cy+1)+'" text-anchor="middle" font-size="'+centerSize+'" font-family="system-ui, sans-serif" font-weight="650" fill="'+palette.fg+'">'+fmt(total)+'</text>');
     p.push('<text x="'+cx+'" y="'+(cy+23)+'" text-anchor="middle" font-size="12" font-family="system-ui, sans-serif" fill="'+palette.faint+'">'+metric+'</text>');
