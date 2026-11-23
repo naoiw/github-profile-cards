@@ -1,5 +1,5 @@
 name: GitHub Profile Cards
-description: Generate Top N Languages by Repo and Commit SVG cards
+description: Generate Top N Languages by Repo and Commit SVG cards plus a browsable gallery README
 author: naoiw
 
 inputs:
@@ -20,7 +20,7 @@ inputs:
     description: all, dark or light (all generates both theme folders)
     default: all
   output-dir:
-    description: Root output directory; each theme is written to a subdirectory
+    description: Root output directory for theme subdirectories and the generated gallery README
     default: profile-card-output
   hide-others:
     description: Do not combine hidden languages into an Others category

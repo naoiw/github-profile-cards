@@ -9,10 +9,13 @@ GitHub Profile Cards is a **Node.js 26 / TypeScript** CLI packaged as a composit
 | `src/github.ts` | Authenticated GitHub GraphQL requests, repository pagination, contributions by year |
 | `src/core.ts` | Filtering, aggregation, colors, Top N/Others and SVG rendering |
 | `src/cli.ts` | Command-line arguments, input validation, output files and demo data |
+| `src/output-gallery.ts` | Manifest-based Markdown gallery, generated-file validation and deterministic output |
 | `action.yml` | Reusable composite Action that runs the CLI with Node.js 26 |
-| `examples/profile-workflow.yml` | Caller workflow that commits SVGs into the user's own profile repository |
+| `examples/profile-workflow.yml` | Caller workflow that commits generated output files into the user's own profile repository |
 | `scripts/gallery.ts` | Regenerates the fixed public-data light/dark gallery SVGs |
 | `tests/core.test.ts` | Unit tests for metric definitions, labels, themes and safe markup |
+| `tests/output-gallery.test.ts` | Tests for Markdown paths, grouping, missing SVG files and idempotent writes |
+| `tests/cli.test.ts` | End-to-end CLI generation tests, including theme switching and custom output directories |
 
 ## Data sources and definitions
 
@@ -57,6 +60,8 @@ GitHub's own language detection is based on [Linguist](https://github.com/github
 
 Selecting `dark` or `light` produces only that theme's two files, always under its own theme subdirectory. The `chart` option (`donut` / `bars`) selects the chart layout independently.
 
+The Action and CLI additionally generate `<output-dir>/README.md` as an inline preview gallery. The gallery is built from a manifest of files written in the **current run** rather than scanning output directories; stale files are not listed. Each referenced SVG is checked for existence. Paths are relative to the output README, not to the consumer repository root: embedding a selected SVG in a root README requires prefixing the configured output directory (for the default output path, `./profile-card-output/dark/languages-by-repo.svg`). The chosen chart style is labeled. The README content is deterministic and unchanged content is not rewritten. The output-gallery feature is not part of the already-published `v1.0.0` tag.
+
 ### Verification and limitations
 
 `npm run verify -- --username LOGIN` independently fetches a user’s public non-fork repositories through the REST API, compares each repository’s primary language with the GraphQL response, and checks the aggregate **By Repo** counts. The CI verification currently targets the public `naoiw` account. This catches omissions and mismatches without relying on the SVG renderer itself.
@@ -69,4 +74,4 @@ SVG legends use a display-width-aware ellipsis plus clip boundaries to keep long
 
 The caller workflow decides whether/where to commit these files. This repository never directly modifies a user's profile.
 
-The top-level README displays both style galleries from `profile-card-output/{dark,light}/`. They are frozen public-data snapshots generated for **all** themes by `scripts/gallery.ts` and checked in CI with `npm run gallery:check`. Local synthetic demos are kept in ignored `demo-output/` so they do not overwrite the gallery.
+The top-level README displays both style galleries from `profile-card-output/{dark,light}/`. They are frozen public-data snapshots generated for **all** themes by `scripts/gallery.ts`, along with `profile-card-output/README.md`, and checked in CI with `npm run gallery:check`. Local synthetic demos are kept in ignored `demo-output/` so they do not overwrite the gallery.

@@ -10,7 +10,7 @@
     "generate": "node src/cli.ts",
     "demo": "node src/cli.ts --demo --output-dir demo-output",
     "test": "node --test tests/*.test.ts",
-    "check": "node --check src/github.ts && node --check src/core.ts && node --check src/cli.ts",
+    "check": "node --check src/github.ts && node --check src/core.ts && node --check src/output-gallery.ts && node --check src/cli.ts",
     "gallery": "node scripts/gallery.ts",
     "gallery:check": "node scripts/gallery.ts --check",
     "typecheck": "tsc --noEmit",
