@@ -65,7 +65,7 @@ Selecting `dark` or `light` produces only that theme's two files, always under i
 
 ### SVG layout safeguards
 
-SVG legends use a display-width-aware ellipsis plus clip boundaries to keep long language names out of adjacent numeric and bar columns. Full language labels remain in SVG `<title>` elements. Large donut totals receive a reduced font size to avoid collisions. Renderer tests cover both chart styles and light/dark palettes.
+SVG legends use a display-width-aware ellipsis plus clip boundaries to keep long language names out of adjacent numeric and bar columns. Full language labels remain in SVG `<title>` elements. Large donut totals receive a reduced font size to avoid collisions. Donut slices use explicit SVG arc paths (and a plain circle for a 100% slice) rather than circle dash offsets, to avoid browser-specific artifacts for tiny shares. Renderer tests cover both chart styles and light/dark palettes.
 
 The caller workflow decides whether/where to commit these files. This repository never directly modifies a user's profile.
 

@@ -8,13 +8,13 @@
 <text x="466" y="90" text-anchor="end" font-size="11" font-family="system-ui, sans-serif" font-weight="600" fill="#a6b3c1">SHARE</text>
 <defs><clipPath id="language-label-region"><rect x="24" y="102" width="326" height="217"/></clipPath></defs>
 <circle cx="621" cy="168" r="94" fill="none" stroke="#30363d" stroke-width="40"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#3178c6" stroke-width="40" stroke-dasharray="385.187 205.433" stroke-dashoffset="0.000" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#f1e05a" stroke-width="40" stroke-dasharray="77.037 513.582" stroke-dashoffset="-385.187" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#244776" stroke-width="40" stroke-dasharray="25.679 564.940" stroke-dashoffset="-462.224" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#663399" stroke-width="40" stroke-dasharray="25.679 564.940" stroke-dashoffset="-487.903" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#499886" stroke-width="40" stroke-dasharray="25.679 564.940" stroke-dashoffset="-513.582" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#ffc200" stroke-width="40" stroke-dasharray="25.679 564.940" stroke-dashoffset="-539.261" transform="rotate(-90 621 168)"/>
-<circle cx="621" cy="168" r="94" fill="none" stroke="#dea584" stroke-width="40" stroke-dasharray="25.679 564.940" stroke-dashoffset="-564.940" transform="rotate(-90 621 168)"/>
+<path d="M 621.000000 74.000000 A 94 94 0 1 1 544.204830 222.207950" fill="none" stroke="#3178c6" stroke-width="40"/>
+<path d="M 544.204830 222.207950 A 94 94 0 0 1 528.966096 148.875135" fill="none" stroke="#f1e05a" stroke-width="40"/>
+<path d="M 528.966096 148.875135 A 94 94 0 0 1 537.538789 124.753886" fill="none" stroke="#244776" stroke-width="40"/>
+<path d="M 537.538789 124.753886 A 94 94 0 0 1 552.301419 103.840005" fill="none" stroke="#663399" stroke-width="40"/>
+<path d="M 552.301419 103.840005 A 94 94 0 0 1 572.159109 87.684576" fill="none" stroke="#499886" stroke-width="40"/>
+<path d="M 572.159109 87.684576 A 94 94 0 0 1 595.639104 77.485775" fill="none" stroke="#ffc200" stroke-width="40"/>
+<path d="M 595.639104 77.485775 A 94 94 0 0 1 621.000000 74.000000" fill="none" stroke="#dea584" stroke-width="40"/>
 <text x="621" y="169" text-anchor="middle" font-size="22" font-family="system-ui, sans-serif" font-weight="650" fill="#e6edf3">23</text>
 <text x="621" y="191" text-anchor="middle" font-size="12" font-family="system-ui, sans-serif" fill="#a6b3c1">repos</text>
 <rect x="24" y="107" width="12" height="12" rx="2" fill="#3178c6"/>
