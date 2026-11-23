@@ -1,0 +1,166 @@
+# Manual, guarded minor release. Never run on normal pushes.
+name: Publish GitHub Profile Cards v1.1.0
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Publish v1.1.0 or promote the verified v1 major alias
+        type: choice
+        required: true
+        default: publish
+        options:
+          - publish
+          - promote-v1
+      confirmation:
+        description: Type v1.1.0 to confirm this operation
+        type: string
+        required: true
+      consumer_verified:
+        description: External consumer has verified @v1.1.0 (required for promote-v1)
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v1.1.0-release
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.repository == 'naoiw/github-profile-cards'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate manual release request
+        shell: bash
+        env:
+          OPERATION: ${{ inputs.operation }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+          CONSUMER_VERIFIED: ${{ inputs.consumer_verified }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main" || { echo 'Run this workflow on main only' >&2; exit 1; }
+          test "$CONFIRMATION" = "v1.1.0" || { echo 'Enter v1.1.0 to confirm' >&2; exit 1; }
+          if [[ "$OPERATION" == "promote-v1" && "$CONSUMER_VERIFIED" != "true" ]]; then
+            echo 'Verify @v1.1.0 in an independent consumer before promoting v1' >&2
+            exit 1
+          fi
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Validate release candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node -p 'require("./package.json").version')" = "1.1.0"
+          test -f docs/RELEASE_v1.1.0.md
+          test -f profile-card-output/README.md
+          test "$GITHUB_SHA" = "$(git rev-parse HEAD)"
+      - name: Run source, type and gallery checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund --package-lock=false
+          npm run check
+          npm run typecheck
+          npm test
+          npm run gallery:check
+      - name: Generate live cards with this candidate
+        uses: ./
+        with:
+          username: naoiw
+          theme: all
+          chart: donut
+          output-dir: release-smoke
+      - name: Verify the four SVGs and output gallery
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s release-smoke/README.md
+          for theme in dark light; do
+            for metric in repo commit; do
+              svg="release-smoke/$theme/languages-by-$metric.svg"
+              test -s "$svg"
+              grep -q '<svg ' "$svg"
+              grep -Fq "./$theme/languages-by-$metric.svg" release-smoke/README.md
+            done
+          done
+      - name: Verify public metrics independently
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run verify -- --username naoiw
+
+  publish:
+    needs: verify
+    if: inputs.operation == 'publish'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Publish immutable version tag and release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view v1.1.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'v1.1.0 release already exists; refusing to overwrite it' >&2
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin refs/tags/v1.1.0 >/dev/null 2>&1; then
+            echo 'v1.1.0 tag already exists; refusing to overwrite it' >&2
+            exit 1
+          fi
+          gh release create v1.1.0 \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title 'GitHub Profile Cards v1.1.0' \
+            --notes-file docs/RELEASE_v1.1.0.md \
+            --latest
+          echo 'Published v1.1.0; verify in an independent consumer before promoting v1'
+
+  promote-v1:
+    needs: verify
+    if: inputs.operation == 'promote-v1'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Promote v1 alias only after independent consumer verification
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(gh release view v1.1.0 --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')" = "false"
+          test "$(gh release view v1.1.0 --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq '.isPrerelease')" = "false"
+          git fetch origin tag v1.1.0
+          git fetch origin tag v1.0.0
+          git fetch origin tag v1
+          release_sha="$(git rev-parse 'v1.1.0^{commit}')"
+          original_sha="$(git rev-parse 'v1.0.0^{commit}')"
+          current_sha="$(git rev-parse 'v1^{commit}')"
+          if [[ "$release_sha" == "$current_sha" ]]; then
+            echo "v1 already points to v1.1.0: $release_sha"
+            exit 0
+          fi
+          if [[ "$current_sha" != "$original_sha" ]]; then
+            echo 'v1 does not point to v1.0.0; refusing to overwrite an unexpected version' >&2
+            exit 1
+          fi
+          git merge-base --is-ancestor "$release_sha" "$GITHUB_SHA" || {
+            echo 'v1.1.0 tag is not on current main history' >&2
+            exit 1
+          }
+          previous_ref="$(git ls-remote --tags origin refs/tags/v1 | awk 'NR == 1 {print $1}')"
+          test -n "$previous_ref"
+          git tag -f v1 "$release_sha"
+          git push --force-with-lease="refs/tags/v1:$previous_ref" origin refs/tags/v1
+          echo "Promoted v1 to $release_sha"
