@@ -56,10 +56,15 @@ In PR descriptions, explain changes to metric semantics and note which checks pa
 
 ## Stable releases
 
-The current stable release is `v1.0.0`, with an accompanying `v1` major-version alias. **This release predates the output-local README feature** and generates SVGs only. The source branch/PR preview includes it, but existing workflows pinned to `@v1.0.0` will not gain the feature unless updated to a later release. Consumers may use `naoiw/github-profile-cards@v1.0.0` for a fixed version, `@v1` for compatible v1 updates, or a full commit SHA for exact pinning.
+Version `v1.1.0` adds the output-local gallery README and a browser-compatible donut SVG renderer. Workflows pinned to the immutable `@v1.0.0` tag still generate only SVGs; change their `uses:` reference to `@v1.1.0` after publishing. The moving `@v1` alias is promoted only after verification in an independent consumer. Commit SHA pinning remains available.
 
 The initial release is published by the guarded workflow in `.github/workflows/publish-v1.yml` after it lands on `main`. That workflow runs static checks, unit tests, the public GitHub GraphQL Action smoke test, and the independent REST comparison **before** creating the `v1.0.0` release. It checks existing tags/releases and does not publish a new version on ordinary main pushes.
 
-For a future minor or patch release, use a separately reviewed release process with an updated version and notes. Do not move an existing specific-version tag, and update the `v1` major alias only after verifying the new release. Validate versioned Action usage from an independent consumer repository before closing a release issue.
+To publish v1.1.0, use the manually dispatched `.github/workflows/publish-v1.1.yml` workflow, **not** `publish-v1.yml`:
 
-See [release notes](RELEASE_v1.0.0.md) and [changelog](../CHANGELOG.md).
+1. After the release-preparation PR is merged into `main` and CI passes, open **Actions → Publish GitHub Profile Cards v1.1.0 → Run workflow**. Choose the **main** branch, `operation: publish`, and enter `confirmation: v1.1.0`. The workflow checks syntax, types, tests, gallery consistency, live four-card + README output, and independent public REST metrics. It refuses to replace an existing version tag or release.
+2. Test the published `uses: naoiw/github-profile-cards@v1.1.0` Action in an **independent consumer repository**. Verify four SVGs and output README, review GitHub rendering, commit/push and rerun idempotency. The release workflow does not replace this independent test.
+3. After that test, run the same workflow on **main** with `operation: promote-v1`, `confirmation: v1.1.0`, and `consumer_verified: true`. It promotes the `v1` alias from its expected v1.0.0 target using force-with-lease, without rewriting immutable version tags. Tag protection may require separate permissions or approval.
+4. Update caller workflows pinned to `@v1.0.0` separately if desired. The generator release does not modify `naoiw/naoiw`.
+
+An ordinary main push never publishes v1.1.0. The legacy `publish-v1.yml` remains the one-time initial-release workflow. See the [v1.1.0 release notes](RELEASE_v1.1.0.md), [v1.0.0 notes](RELEASE_v1.0.0.md), and [changelog](../CHANGELOG.md).
